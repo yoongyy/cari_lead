@@ -9,6 +9,15 @@ interface HeroProps {
   onOpenEarlyAccess: () => void;
 }
 
+interface LiveCard {
+  id: string;
+  quote: string;
+  industry: string;
+  location: string;
+  signal: string;
+  time: string;
+}
+
 const rotatingSignals = [
   { text: "Medical card premium AIA naik lagi 30%. Prudential or Great Eastern okay?", category: "Insurance", location: "Selangor" },
   { text: "Looking for a reliable property agent in Cheras.", category: "Property", location: "Kuala Lumpur" },
@@ -20,9 +29,49 @@ const rotatingSignals = [
   { text: "Anyone tried treatment for acne scars in KL? Recommendations?", category: "Beauty", location: "Kuala Lumpur" }
 ];
 
+const initialCards: LiveCard[] = [
+  {
+    id: "card-init-1",
+    quote: "Medical card premium increased again. Any better option?",
+    industry: "Insurance",
+    location: "Selangor",
+    signal: "High Intent",
+    time: "18m ago",
+  },
+  {
+    id: "card-init-2",
+    quote: "Looking for a reliable property agent in Cheras.",
+    industry: "Property",
+    location: "Kuala Lumpur",
+    signal: "Recommendation",
+    time: "42m ago",
+  },
+  {
+    id: "card-init-3",
+    quote: "Renovation contractor delayed for three months. Need advice.",
+    industry: "Renovation",
+    location: "Johor",
+    signal: "Service Complaint",
+    time: "1h ago",
+  },
+];
+
+const signalPool = [
+  { quote: "Thinking of switching my AIA medical card to Great Eastern. Rates are too high.", industry: "Insurance", location: "Penang", signal: "High Intent" },
+  { quote: "Anyone knows a good renovation ID contractor for condo in PJ?", industry: "Renovation", location: "Selangor", signal: "Recommendation" },
+  { quote: "Landlord refused to return my RM3500 security deposit. Help!", industry: "Property", location: "Kuala Lumpur", signal: "Service Complaint" },
+  { quote: "SPM chemistry private tutor needed in Subang Jaya. 2 sessions/week.", industry: "Education", location: "Selangor", signal: "Recommendation" },
+  { quote: "Mazda CX-5 vs Chery Tiggo 7. Which has better fuel efficiency?", industry: "Automotive", location: "Penang", signal: "Comparing options" },
+  { quote: "Great Eastern premium naik 25% this year. Downsizing medical card advice?", industry: "Insurance", location: "Selangor", signal: "High Intent" },
+  { quote: "Looking to rent a 2BR unit in Mont Kiara. Budget RM3k.", industry: "Property", location: "Kuala Lumpur", signal: "Recommendation" },
+  { quote: "Car dealer delayed delivery for 3 months now. Can I cancel booking?", industry: "Automotive", location: "Johor", signal: "Service Complaint" },
+];
+
 export default function Hero({ onOpenEarlyAccess }: HeroProps) {
   const [currentSignal, setCurrentSignal] = useState(rotatingSignals[0]);
+  const [activeCards, setActiveCards] = useState<LiveCard[]>(initialCards);
   const signalIndex = useRef(0);
+  const cardIndex = useRef(0);
 
   useEffect(() => {
     // Check if we can fetch live data, fallback to templates
@@ -30,26 +79,73 @@ export default function Hero({ onOpenEarlyAccess }: HeroProps) {
       .then((res) => res.json())
       .then((data) => {
         if (data.success && data.opportunities?.length > 0) {
-          // Merge with our existing rotating list
+          // Merge with our existing lists
           const formatted = data.opportunities.map((opp: any) => ({
             text: opp.quote,
             category: opp.industry,
             location: opp.location
           }));
           rotatingSignals.push(...formatted);
+
+          const formattedCards = data.opportunities.map((opp: any) => ({
+            quote: opp.quote,
+            industry: opp.industry,
+            location: opp.location,
+            signal: opp.signal,
+          }));
+          signalPool.push(...formattedCards);
         }
       })
       .catch((err) => console.warn("Failed to fetch live opportunities for hero:", err));
   }, []);
 
   useEffect(() => {
-    const interval = setInterval(() => {
+    // 1. Rotate the floating badge signal
+    const badgeInterval = setInterval(() => {
       signalIndex.current = (signalIndex.current + 1) % rotatingSignals.length;
       setCurrentSignal(rotatingSignals[signalIndex.current]);
-    }, 4500); // Rotate every 4.5s
+    }, 4500);
 
-    return () => clearInterval(interval);
+    // 2. Rotate/stream the actual 3-card listing inside the dashboard
+    const listInterval = setInterval(() => {
+      const nextRaw = signalPool[cardIndex.current % signalPool.length];
+      cardIndex.current += 1;
+
+      const newCard: LiveCard = {
+        id: `card-live-${Date.now()}-${cardIndex.current}`,
+        quote: nextRaw.quote,
+        industry: nextRaw.industry,
+        location: nextRaw.location,
+        signal: nextRaw.signal,
+        time: "Just now",
+      };
+
+      setActiveCards((prev) => {
+        const updatedPrev = prev.map((item) => {
+          if (item.time === "Just now") return { ...item, time: "2m ago" };
+          if (item.time === "2m ago") return { ...item, time: "18m ago" };
+          if (item.time === "18m ago") return { ...item, time: "42m ago" };
+          if (item.time === "42m ago") return { ...item, time: "1h ago" };
+          return { ...item, time: "2h ago" };
+        });
+        return [newCard, ...updatedPrev].slice(0, 3);
+      });
+    }, 5000); // Prepend new card every 5 seconds
+
+    return () => {
+      clearInterval(badgeInterval);
+      clearInterval(listInterval);
+    };
   }, []);
+
+  // Map signal names to design classes
+  const getBadgeStyle = (sig: string) => {
+    const s = sig.toLowerCase();
+    if (s.includes("high") || s.includes("switch")) return "bg-red-100 text-red-700";
+    if (s.includes("recommend") || s.includes("look")) return "bg-teal-100 text-teal-700";
+    if (s.includes("complaint") || s.includes("service")) return "bg-amber-100 text-amber-700";
+    return "bg-slate-100 text-slate-700";
+  };
 
   return (
     <section className="relative overflow-hidden pt-32 pb-20 md:pt-40 md:pb-28 bg-[#F8FAFC]">
@@ -99,7 +195,7 @@ export default function Hero({ onOpenEarlyAccess }: HeroProps) {
             >
               <Link
                 href="/reports/malaysia-insurance"
-                className="bg-primary hover:bg-primary-dark text-white text-base font-semibold px-6 py-4 rounded-xl shadow-lg hover:shadow-xl hover:shadow-primary/20 transition-all flex items-center justify-center gap-2 group active:scale-95"
+                className="bg-primary hover:bg-primary-dark text-white text-base font-semibold px-6 py-4 rounded-xl shadow-lg hover:shadow-xl hover:shadow-primary/20 transition-all flex items-center justify-center gap-2 group active:scale-95 animate-pulse"
               >
                 Sample Insurance Leads Report
                 <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
@@ -144,7 +240,7 @@ export default function Hero({ onOpenEarlyAccess }: HeroProps) {
               <div className="flex items-center justify-between border-b border-slate-100 pb-4 mb-4">
                 <div className="flex items-center gap-2">
                   <div className="flex gap-1.5">
-                    <span className="w-3 h-3 rounded-full bg-red-400" />
+                    <span className="w-3 h-3 rounded-full bg-red-400 animate-pulse" />
                     <span className="w-3 h-3 rounded-full bg-amber-400" />
                     <span className="w-3 h-3 rounded-full bg-green-400" />
                   </div>
@@ -154,116 +250,58 @@ export default function Hero({ onOpenEarlyAccess }: HeroProps) {
                     <span>CARILEAD ENGINE v1.2</span>
                   </div>
                 </div>
-                <div className="text-[10px] text-slate-400 font-medium">
-                  Live Stream Signals
+                <div className="text-[10px] text-primary font-bold flex items-center gap-1">
+                  <span className="relative flex h-2 w-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
+                  </span>
+                  <span>LIVE CRAWLING</span>
                 </div>
               </div>
 
-              {/* Feed Content Stack */}
-              <div className="space-y-4">
-                {/* Opportunity Card 1 */}
-                <motion.div
-                  initial={{ x: 20, opacity: 0 }}
-                  animate={{ x: 0, opacity: 1 }}
-                  transition={{ delay: 0.4 }}
-                  className="p-3.5 bg-slate-50 hover:bg-slate-100/70 border border-slate-200/50 rounded-xl transition-all shadow-sm group"
-                >
-                  <div className="flex items-start justify-between gap-4 mb-2">
-                    <span className="px-2 py-0.5 rounded-full bg-red-100 text-red-700 text-[10px] font-bold uppercase tracking-wider">
-                      High Intent
-                    </span>
-                    <span className="flex items-center gap-1 text-[11px] text-slate-400 font-medium">
-                      <Clock className="w-3 h-3" />
-                      18m ago
-                    </span>
-                  </div>
-                  <p className="text-sm font-medium text-navy mb-3 italic">
-                    &ldquo;Medical card premium increased again. Any better option?&rdquo;
-                  </p>
-                  <div className="flex flex-wrap items-center justify-between gap-2 text-xs border-t border-slate-200/40 pt-2.5">
-                    <div className="flex items-center gap-2 text-slate-500">
-                      <span className="bg-primary/10 text-primary-dark font-semibold px-2 py-0.5 rounded text-[10px]">
-                        Insurance
-                      </span>
-                      <span className="flex items-center gap-0.5">
-                        <MapPin className="w-3.5 h-3.5" /> Selangor
-                      </span>
-                    </div>
-                    <span className="flex items-center gap-1 font-semibold text-primary hover:underline text-[11px] cursor-pointer">
-                      View Public Source
-                      <ArrowUpRight className="w-3.5 h-3" />
-                    </span>
-                  </div>
-                </motion.div>
-
-                {/* Opportunity Card 2 */}
-                <motion.div
-                  initial={{ x: -20, opacity: 0 }}
-                  animate={{ x: 0, opacity: 1 }}
-                  transition={{ delay: 0.5 }}
-                  className="p-3.5 bg-slate-50 hover:bg-slate-100/70 border border-slate-200/50 rounded-xl transition-all shadow-sm"
-                >
-                  <div className="flex items-start justify-between gap-4 mb-2">
-                    <span className="px-2 py-0.5 rounded-full bg-teal-100 text-teal-700 text-[10px] font-bold uppercase tracking-wider">
-                      Recommendation
-                    </span>
-                    <span className="flex items-center gap-1 text-[11px] text-slate-400 font-medium">
-                      <Clock className="w-3 h-3" />
-                      42m ago
-                    </span>
-                  </div>
-                  <p className="text-sm font-medium text-navy mb-3 italic">
-                    &ldquo;Looking for a reliable property agent in Cheras.&rdquo;
-                  </p>
-                  <div className="flex flex-wrap items-center justify-between gap-2 text-xs border-t border-slate-200/40 pt-2.5">
-                    <div className="flex items-center gap-2 text-slate-500">
-                      <span className="bg-primary/10 text-primary-dark font-semibold px-2 py-0.5 rounded text-[10px]">
-                        Property
-                      </span>
-                      <span className="flex items-center gap-0.5">
-                        <MapPin className="w-3.5 h-3.5" /> Kuala Lumpur
-                      </span>
-                    </div>
-                    <span className="flex items-center gap-1 font-semibold text-primary hover:underline text-[11px] cursor-pointer">
-                      View Public Source
-                      <ArrowUpRight className="w-3.5 h-3" />
-                    </span>
-                  </div>
-                </motion.div>
-
-                {/* Opportunity Card 3 */}
-                <motion.div
-                  initial={{ x: 20, opacity: 0 }}
-                  animate={{ x: 0, opacity: 1 }}
-                  transition={{ delay: 0.6 }}
-                  className="p-3.5 bg-slate-50 hover:bg-slate-100/70 border border-slate-200/50 rounded-xl transition-all shadow-sm"
-                >
-                  <div className="flex items-start justify-between gap-4 mb-2">
-                    <span className="px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 text-[10px] font-bold uppercase tracking-wider">
-                      Service Complaint
-                    </span>
-                    <span className="flex items-center gap-1 text-[11px] text-slate-400 font-medium">
-                      <Clock className="w-3 h-3" />
-                      1h ago
-                    </span>
-                  </div>
-                  <p className="text-sm font-medium text-navy mb-3 italic">
-                    &ldquo;Renovation contractor delayed for three months. Need advice.&rdquo;
-                  </p>
-                  <div className="flex flex-wrap items-center justify-between gap-2 text-xs border-t border-slate-200/40 pt-2.5">
-                    <div className="flex items-center gap-2 text-slate-500">
-                      <span className="bg-primary/10 text-primary-dark font-semibold px-2 py-0.5 rounded text-[10px]">
-                        Renovation
-                      </span>
-                      <span className="flex items-center gap-0.5">
-                        <MapPin className="w-3.5 h-3.5" /> Johor
-                      </span>
-                    </div>
-                    <span className="flex items-center gap-1 font-semibold text-primary hover:underline text-[11px] cursor-pointer">
-                      View Public Source
-                      <ArrowUpRight className="w-3.5 h-3" />
-                    </span>
-                  </div>
+              {/* Feed Content Stack - Animated with AnimatePresence */}
+              <div className="space-y-4 overflow-hidden max-h-[360px] relative">
+                <motion.div layout className="space-y-4">
+                  <AnimatePresence mode="popLayout">
+                    {activeCards.map((card) => (
+                      <motion.div
+                        key={card.id}
+                        layout
+                        initial={{ opacity: 0, y: -40, scale: 0.96 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: 40, scale: 0.95 }}
+                        transition={{ type: "spring", stiffness: 140, damping: 18 }}
+                        className="p-3.5 bg-slate-50 hover:bg-slate-100/70 border border-slate-200/50 rounded-xl transition-all shadow-sm group"
+                      >
+                        <div className="flex items-start justify-between gap-4 mb-2">
+                          <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${getBadgeStyle(card.signal)}`}>
+                            {card.signal}
+                          </span>
+                          <span className="flex items-center gap-1 text-[11px] text-slate-400 font-medium">
+                            <Clock className="w-3 h-3 animate-pulse" />
+                            {card.time}
+                          </span>
+                        </div>
+                        <p className="text-sm font-semibold text-navy mb-3 italic">
+                          &ldquo;{card.quote}&rdquo;
+                        </p>
+                        <div className="flex flex-wrap items-center justify-between gap-2 text-xs border-t border-slate-200/40 pt-2.5">
+                          <div className="flex items-center gap-2 text-slate-500">
+                            <span className="bg-primary/10 text-primary-dark font-semibold px-2 py-0.5 rounded text-[10px]">
+                              {card.industry}
+                            </span>
+                            <span className="flex items-center gap-0.5">
+                              <MapPin className="w-3.5 h-3.5" /> {card.location}
+                            </span>
+                          </div>
+                          <span className="flex items-center gap-1 font-semibold text-primary hover:underline text-[11px] cursor-pointer">
+                            View Public Source
+                            <ArrowUpRight className="w-3.5 h-3" />
+                          </span>
+                        </div>
+                      </motion.div>
+                    ))}
+                  </AnimatePresence>
                 </motion.div>
               </div>
 
