@@ -5,9 +5,10 @@ import { Radio } from "lucide-react";
 
 export default function Footer() {
   const links = [
-    { name: "How It Works", href: "#how-it-works" },
-    { name: "Industries", href: "#industries" },
-    { name: "Pricing", href: "#pricing" },
+    { name: "How It Works", href: "/#how-it-works" },
+    { name: "Industries", href: "/#industries" },
+    { name: "Sample Report", href: "/reports/malaysia-insurance" },
+    { name: "Pricing", href: "/#pricing" },
     { name: "Privacy", href: "#" },
     { name: "Terms", href: "#" },
     { name: "Contact", href: "#" },

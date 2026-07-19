@@ -1,0 +1,236 @@
+industry: insurance
+country: Malaysia
+timezone: Asia/Kuala_Lumpur
+default_recent_days: 180
+malaysia_threshold: 0.55
+discovery_open_threshold: 32
+open_fraction: 0.30
+request_delay:
+  min_seconds: 5
+  max_seconds: 10
+crawl_limits:
+  max_requests_per_minute: 6
+  max_requests_per_hour: 240
+  max_detail_opens_per_minute: 3
+  max_detail_opens_per_hour: 100
+  max_comment_requests_per_hour: 60
+  max_runtime_minutes: 90
+  max_total_requests: 250
+  max_detail_posts_per_query: 15
+  max_detail_posts_per_run: 100
+  max_comment_requests_per_run: 150
+  max_comments_per_post: 50
+  long_pause_after_requests: 12
+  long_pause_min_seconds: 20
+  long_pause_max_seconds: 45
+  extended_break_after_requests: 75
+  extended_break_min_seconds: 180
+  extended_break_max_seconds: 480
+  cooldown_between_query_groups_seconds: 30
+risk_control:
+  max_consecutive_errors: 2
+  stop_on_first_risk_event: true
+  max_error_rate: 0.20
+revisit_ttl_hours:
+  high_priority: 24
+  normal: 168
+  low_value: 720
+  rejected: null
+weights:
+  country: 0.40
+  city_state: 0.25
+  local_identifier: 0.25
+  brand_term: 0.20
+  language_mix: 0.10
+  china_only_penalty: -0.35
+insurers:
+  - Great Eastern
+  - AIA
+  - Prudential
+  - PruBSN
+  - Allianz
+  - Etiqa
+  - Takaful Malaysia
+  - Zurich
+  - Tokio Marine
+  - Hong Leong Assurance
+  - Manulife
+  - Generali
+  - Sun Life Malaysia
+  - FWD
+  - Tune Protect
+  - MSIG
+  - Chubb
+  - RHB Insurance
+  - AmMetLife
+  - Gibraltar BSN
+  - MCIS Life
+  - Liberty Insurance
+  - Berjaya Sompo
+insurance_products:
+  - medical card
+  - medical insurance
+  - life insurance
+  - critical illness
+  - personal accident
+  - investment-linked policy
+  - takaful
+  - family takaful
+  - motor insurance
+  - travel insurance
+  - child insurance
+  - senior medical insurance
+  - group medical insurance
+exclusion_rules:
+  - phone_numbers
+  - private_email_addresses
+  - hidden_profile_data
+  - vendor_advertisements
+  - agent_promotions
+  - recruitment
+  - unrelated_listings
+query_groups:
+  purchase_request:
+    - 马来西亚 医疗卡 想买
+    - 大马 要买医疗卡 求建议
+    - looking for medical insurance Malaysia
+    - Malaysia need life insurance
+    - parents medical card Malaysia budget
+    - newborn insurance Malaysia looking for
+    - family insurance Malaysia need coverage
+    - SME insurance Malaysia need quotation
+  recommendation_request:
+    - 马来西亚 医疗卡 求推荐
+    - 大马 父母 医疗保险 哪个好
+    - insurance recommendation Malaysia
+    - recommend medical card Kuala Lumpur
+    - 找可靠保险代理 雪兰莪
+    - can recommend insurance agent Malaysia
+    - honest takaful agent Malaysia
+    - child insurance 哪一家好 Malaysia
+  comparison:
+    - compare medical card Malaysia
+    - AIA vs Great Eastern medical card Malaysia
+    - Prudential vs Allianz medical insurance
+    - takaful versus insurance Malaysia
+    - 医疗卡 哪个比较值得 大马
+    - medical card deductible comparison Malaysia
+    - annual limit insurance comparison Malaysia
+    - parents medical insurance compare Malaysia
+  premium_increase:
+    - Great Eastern medical card 涨价
+    - AIA premium increase Malaysia
+    - Prudential premium naik Malaysia
+    - medical card Malaysia premium increase
+    - 大马 医疗卡 越来越贵
+    - insurance renew 太贵 Malaysia
+    - takaful contribution increase Malaysia
+    - medical insurance cannot afford renewal Malaysia
+  claim_problem:
+    - Malaysia insurance claim rejected what to do
+    - AIA claim rejected Malaysia
+    - Prudential claim 被拒 大马
+    - medical claim delayed Malaysia
+    - hospital admission no GL Malaysia
+    - insurance claim appeal Malaysia
+    - medical bill not covered Malaysia
+    - insurer refuses claim Malaysia
+  agent_service:
+    - Prudential agent 不回复 Malaysia
+    - insurance agent disappeared Malaysia
+    - 大马 保险代理 不见了
+    - AIA agent service 很差 Malaysia
+    - insurance agent hard sell Malaysia
+    - agent mis-selling insurance Malaysia
+    - change insurance agent Malaysia
+    - insurance agent poor explanation Malaysia
+  switching:
+    - 想换保险 马来西亚
+    - considering switching insurance Malaysia
+    - change medical card Malaysia
+    - switch insurer Malaysia recommendation
+    - Great Eastern alternative Malaysia
+    - AIA alternative medical card Malaysia
+    - premium increase want to switch Malaysia
+    - agent no response want new agent Malaysia
+  cancellation:
+    - cancel policy Malaysia problem
+    - 不想续保 医疗卡 大马
+    - surrender policy Malaysia regret
+    - terminate insurance policy Malaysia
+    - cancellation refund problem Malaysia
+    - medical card non renewal Malaysia
+    - policy surrender loss Malaysia
+    - cannot cancel insurance Malaysia
+  policy_confusion:
+    - medical card annual limit Malaysia question
+    - co-insurance deductible Malaysia confused
+    - policy exclusion 不明白 Malaysia
+    - insurance waiting period Malaysia question
+    - ILP charges Malaysia confused
+    - cash value surrender value Malaysia
+    - policy lapse auto debit Malaysia
+    - insurance nomination Malaysia help
+  family_and_parents:
+    - parents medical card below RM500 Malaysia
+    - 老人医疗卡 马来西亚 求推荐
+    - child medical card Malaysia recommendation
+    - newborn insurance Malaysia budget
+    - maternity insurance Malaysia comparison
+    - family takaful Malaysia 哪个好
+    - senior medical insurance Malaysia
+    - critical illness parents Malaysia
+  SME_and_group_insurance:
+    - SME group medical insurance Malaysia recommendation
+    - company insurance Malaysia quotation
+    - employee medical card Malaysia SME
+    - business owner insurance Malaysia
+    - group medical premium Malaysia comparison
+    - company takaful Malaysia recommendation
+    - SME insurance agent Malaysia
+    - employee benefits insurance Malaysia cost
+  takaful:
+    - takaful 哪个好 Malaysia
+    - family takaful Malaysia recommendation
+    - PruBSN takaful complaint Malaysia
+    - Takaful Malaysia claim problem
+    - Etiqa takaful premium increase
+    - medical takaful compare Malaysia
+    - switch insurance to takaful Malaysia
+    - takaful agent recommendation Selangor
+  trust_and_scam:
+    - insurance scam Malaysia agent
+    - fake insurance agent Malaysia
+    - insurance 被骗 大马
+    - agent unauthorized premium collection Malaysia
+    - forged insurance policy Malaysia
+    - misleading insurance benefit Malaysia
+    - Bank Negara complaint insurance Malaysia
+    - Ombudsman Financial Services insurance complaint
+  insurer_specific:
+    - Great Eastern medical card Malaysia review
+    - AIA medical insurance Malaysia complaint
+    - Prudential medical card Malaysia review
+    - Allianz insurance Malaysia claim
+    - Etiqa insurance Malaysia review
+    - Zurich insurance Malaysia complaint
+    - Manulife medical card Malaysia review
+    - FWD insurance Malaysia experience
+  software_and_service_spending:
+    - insurance agent software Malaysia
+    - insurance agent CRM Malaysia
+    - 保险代理 课程 多少钱 大马
+    - insurance agent marketing service price Malaysia
+    - 保险代理 代运营 马来西亚
+    - insurance agent software 太贵
+    - insurance agent willing to pay for leads
+    - 保险代理 付费获客 大马
+  insurance_agent_workflow:
+    - 保险代理 获客 工具 马来西亚
+    - insurance agent lead generation Malaysia
+    - insurance agent follow up CRM Malaysia
+    - insurance agent 买 lead Malaysia
+    - 保险代理 lead 没效果
+    - insurance agent appointment setting Malaysia
+    - insurance agent customer retention Malaysia
+    - insurance agent compliance workflow Malaysia

@@ -1,0 +1,95 @@
+premium_and_affordability:
+  - premium_increase
+  - age_based_increase
+  - medical_inflation
+  - unaffordable_renewal
+  - loading
+  - co_insurance
+  - deductible
+  - policy_downgrade
+  - coverage_reduction
+  - premium_payment_problem
+claims:
+  - rejected_claim
+  - delayed_claim
+  - partial_claim
+  - guarantee_letter_issue
+  - hospital_admission_problem
+  - missing_documents
+  - pre_existing_condition_dispute
+  - exclusion_dispute
+  - appeal_request
+  - poor_claim_communication
+agent_service:
+  - agent_disappeared
+  - no_response
+  - poor_explanation
+  - hard_selling
+  - mis_selling
+  - wrong_recommendation
+  - failed_follow_up
+  - change_of_agent
+  - trust_issue
+  - document_problem
+product_confusion:
+  - medical_card_comparison
+  - annual_limit
+  - lifetime_limit
+  - deductible
+  - co_insurance
+  - waiting_period
+  - exclusion
+  - cash_value
+  - surrender_value
+  - ilp_charges
+  - policy_lapse
+  - nomination
+  - takaful_versus_insurance
+active_purchase_demand:
+  - new_medical_card
+  - life_insurance
+  - critical_illness
+  - parents_coverage
+  - child_coverage
+  - maternity_coverage
+  - senior_coverage
+  - family_coverage
+  - sme_group_coverage
+  - motor_insurance
+  - travel_insurance
+  - takaful
+  - agent_recommendation
+switching_and_cancellation:
+  - considering_switch
+  - explicit_switch
+  - policy_cancellation
+  - non_renewal
+  - surrender
+  - insurer_comparison
+  - agent_replacement
+  - downgrade
+  - move_to_takaful
+  - move_from_takaful
+trust_and_scams:
+  - fake_agent
+  - licence_verification
+  - unauthorized_premium_collection
+  - impersonation
+  - forged_policy
+  - misleading_benefit
+  - refund_dispute
+  - complaint_channel
+agent_business_problems:
+  - finding_prospects
+  - low_quality_leads
+  - cold_outreach
+  - lead_cost
+  - social_media_content
+  - referrals
+  - appointment_setting
+  - crm
+  - follow_up
+  - recruitment
+  - training
+  - compliance
+  - customer_retention

@@ -6,6 +6,7 @@ import Hero from "@/components/hero";
 import ProblemSection from "@/components/problem-section";
 import HowItWorks from "@/components/how-it-works";
 import OpportunityFeed from "@/components/opportunity-feed";
+import InsuranceProof from "@/components/insurance-proof";
 import FreeReport from "@/components/free-report";
 import ComparisonTable from "@/components/comparison-table";
 import IndustryCards from "@/components/industry-cards";
@@ -37,6 +38,9 @@ export default function Home() {
 
         {/* Interactive Opportunity Feed Mockup */}
         <OpportunityFeed />
+
+        {/* Insurance report proof and sample opportunities */}
+        <InsuranceProof />
 
         {/* Free report signup form */}
         <FreeReport />

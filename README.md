@@ -91,6 +91,44 @@ Useful options:
 python main.py search --help
 ```
 
+## Malaysia Insurance Research
+
+The insurance module uses a separate 128-query matrix, staged discovery, value-based detail selection, bounded comment fetching, incremental TTL state, and conservative request budgets. It defaults to one active request at a time and never sends messages.
+
+Preview a daily schedule without crawling:
+
+```bash
+python main.py plan-crawl \
+  --industry insurance \
+  --country malaysia \
+  --frequency daily \
+  --yes
+```
+
+Run the controlled six-query test:
+
+```bash
+python main.py research \
+  --industry insurance \
+  --country malaysia \
+  --controlled-test \
+  --recent-days 180 \
+  --posts-per-query 10 \
+  --fetch-comments \
+  --max-comments-per-post 30 \
+  --max-runtime-minutes 45 \
+  --max-detail-posts 30 \
+  --max-comment-requests 30
+```
+
+Generate both insurance reports without recrawling:
+
+```bash
+python main.py insurance-report
+```
+
+Insurance outputs include customer-voice and sales-opportunity Markdown/JSON/CSV packages plus anonymized free-summary and source-linked paid-detail JSON interfaces. Public phone numbers are redacted from stored insurance evidence and exports; hidden contact or private profile data is never collected.
+
 Important defaults:
 
 - Request delay: random 2 to 5 seconds

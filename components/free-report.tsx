@@ -38,7 +38,7 @@ export default function FreeReport() {
         throw new Error(data.error || "Failed to submit report request.");
       }
 
-      // Process submission (Save to localStorage as backup)
+      // TODO: Replace the localStorage fallback when the subscription API is finalized.
       const reportSignup = {
         email,
         industry,
@@ -59,7 +59,7 @@ export default function FreeReport() {
     }
   };
 
-  const industries = ["Insurance", "Property", "Car Sales", "Education", "Renovation"];
+  const industries = ["Insurance", "Property", "Automotive", "Education", "Renovation", "Beauty", "Professional Services"];
 
   return (
     <section id="free-report" className="py-20 bg-white relative overflow-hidden">
@@ -79,17 +79,19 @@ export default function FreeReport() {
               Start with the free weekly industry report.
             </h3>
             <p className="text-slate-600 text-base mb-8 leading-relaxed">
-              See what Malaysian customers are complaining about, asking for, comparing, and switching away from. Understand the demand volume before subscribing.
+              {industry === "Insurance"
+                ? "Receive a weekly summary of Malaysian insurance complaints, questions, comparisons, switching signals, and public purchase requests."
+                : "See what Malaysian customers are complaining about, asking for, comparing, and switching away from. Understand the demand volume before subscribing."}
             </p>
 
             {isSubmitted ? (
               <div className="p-6 bg-primary/5 border border-primary/20 rounded-2xl flex flex-col gap-3">
                 <div className="flex items-center gap-2 text-primary-dark">
                   <CheckCircle2 className="w-6 h-6 shrink-0" />
-                  <span className="font-bold text-base">Check your inbox soon!</span>
+                  <span className="font-bold text-base">Report request received</span>
                 </div>
                 <p className="text-sm text-slate-600 leading-relaxed">
-                  Thank you! We will email you the next copy of the <strong>Malaysia {industry} Customer Voice Report</strong> this Friday.
+                  You&apos;re on the list. We&apos;ll send your selected industry report when the next edition is ready.
                 </p>
                 <button
                   onClick={() => setIsSubmitted(false)}

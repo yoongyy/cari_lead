@@ -17,8 +17,13 @@ from pymongo.operations import ReplaceOne
 from .models import Comment, Post, ResearchFinding
 
 
+STATE_COLLECTIONS = (
+    "queries", "query_runs", "discovered_posts", "post_fetch_state", "comment_fetch_state",
+    "risk_events", "source_accounts", "analysis_runs", "insurance_findings", "insurance_crawl_metrics",
+)
 COLLECTIONS = (
     "crawl_runs", "search_queries", "posts", "comments", "findings", "crawl_errors",
+    *STATE_COLLECTIONS,
 )
 
 
@@ -69,6 +74,12 @@ class SQLiteStorage:
             );
             """
         )
+        for table in STATE_COLLECTIONS:
+            self.conn.execute(
+                f"""create table if not exists {table} (
+                  record_key text primary key, document_json text not null, updated_at text not null
+                )"""
+            )
         self._migrate_columns()
         self.conn.commit()
 
@@ -258,7 +269,28 @@ class SQLiteStorage:
             pd.read_sql_query(f"select * from {table}", self.conn).to_csv(output_dir / f"{table}.csv", index=False)
 
     def read_frame(self, table: str) -> pd.DataFrame:
+        if table in STATE_COLLECTIONS:
+            rows = self.conn.execute(f"select document_json from {table}").fetchall()
+            return pd.DataFrame([json.loads(row[0]) for row in rows])
         return pd.read_sql_query(f"select * from {table}", self.conn)
+
+    def upsert_state(self, collection: str, record_key: str, document: dict[str, Any]) -> None:
+        if collection not in STATE_COLLECTIONS:
+            raise ValueError(f"Unknown state collection: {collection}")
+        payload = {**document, "record_key": record_key}
+        self.conn.execute(
+            f"insert or replace into {collection}(record_key, document_json, updated_at) values (?, ?, ?)",
+            (record_key, json.dumps(payload, ensure_ascii=False, default=str), datetime.utcnow().isoformat()),
+        )
+        self.conn.commit()
+
+    def get_state(self, collection: str, record_key: str) -> dict[str, Any] | None:
+        if collection not in STATE_COLLECTIONS:
+            raise ValueError(f"Unknown state collection: {collection}")
+        row = self.conn.execute(
+            f"select document_json from {collection} where record_key=?", (record_key,)
+        ).fetchone()
+        return json.loads(row[0]) if row else None
 
     def clear_collections(self, names: Iterable[str]) -> None:
         for table in names:
@@ -291,6 +323,10 @@ class MongoStorage:
         self.db.comments.create_index([("post_id", ASCENDING)])
         self.db.findings.create_index([("post_id", ASCENDING)])
         self.db.search_queries.create_index([("run_id", ASCENDING)])
+        for name in STATE_COLLECTIONS:
+            self.db[name].create_index([("record_key", ASCENDING)], unique=True)
+        self.db.discovered_posts.create_index([("post_id", ASCENDING)])
+        self.db.insurance_findings.create_index([("source_id", ASCENDING)])
 
     def _next_id(self, collection: str) -> int:
         counter = self.db["_counters"].find_one_and_update(
@@ -380,6 +416,17 @@ class MongoStorage:
         documents = list(self.db[collection].find({}, {"_id": 0}))
         return pd.DataFrame(documents)
 
+    def upsert_state(self, collection: str, record_key: str, document: dict[str, Any]) -> None:
+        if collection not in STATE_COLLECTIONS:
+            raise ValueError(f"Unknown state collection: {collection}")
+        payload = {**document, "record_key": record_key, "updated_at": datetime.utcnow().isoformat()}
+        self.db[collection].replace_one({"record_key": record_key}, payload, upsert=True)
+
+    def get_state(self, collection: str, record_key: str) -> dict[str, Any] | None:
+        if collection not in STATE_COLLECTIONS:
+            raise ValueError(f"Unknown state collection: {collection}")
+        return self.db[collection].find_one({"record_key": record_key}, {"_id": 0})
+
     def clear_collections(self, names: Iterable[str]) -> None:
         for name in names:
             if name not in COLLECTIONS:
@@ -457,6 +504,8 @@ def _finding_key(document: dict[str, Any]) -> str:
 
 
 def _migration_identity(collection: str, document: dict[str, Any]) -> tuple[str, Any]:
+    if collection in STATE_COLLECTIONS:
+        return "record_key", str(document["record_key"])
     if collection == "posts":
         return "post_id", str(document["post_id"])
     if collection == "comments":

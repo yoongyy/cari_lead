@@ -15,11 +15,21 @@ from .audit import write_data_quality_audit
 from .config import load_config
 from .deduplicator import Deduplicator
 from .extraction_quality import clean_browser_detail
+from .insurance_pipeline import InsuranceCrawler
+from .insurance_browser_import import import_browser_insurance
+from .insurance_queries import (
+    CONTROLLED_QUERIES,
+    INSURANCE_RESEARCH_QUESTIONS,
+    build_crawl_plan,
+    insurance_queries,
+)
+from .insurance_report import generate_insurance_reports
 from .malaysia_classifier import MalaysiaClassifier
 from .market_report import generate_market_intelligence
 from .query_matrix import queries_for
 from .report_generator import generate_report
 from .storage import COLLECTIONS, Storage
+from .config import load_insurance_config
 from .utils import clean_text, dump_json, is_recent, random_delay, setup_logging
 from .xhs_client import (
     XHSAuthError,
@@ -231,6 +241,125 @@ def query_plan(
     console.print(f"{len(selected)} query/queries selected.")
 
 
+@app.command("plan-crawl")
+def plan_insurance_crawl(
+    industry: str = "insurance",
+    country: str = "malaysia",
+    frequency: Literal["daily", "weekly", "monthly"] = "daily",
+    query_limit: int | None = None,
+    posts_per_query: int = 10,
+    yes: bool = False,
+) -> None:
+    """Show a conservative insurance crawl schedule without making XHS requests."""
+    if industry.lower() != "insurance" or country.lower() != "malaysia":
+        raise typer.BadParameter("This planner currently supports --industry insurance --country malaysia")
+    plan = build_crawl_plan(frequency, query_limit, posts_per_query)
+    storage = Storage()
+    completed_frame = storage.read_frame("query_runs")
+    completed = set(completed_frame.get("query", [])) if not completed_frame.empty else set()
+    table = Table("#", "Query", "State", "Reason")
+    for index, query in enumerate(plan.selected_queries, start=1):
+        was_completed = query in completed
+        table.add_row(str(index), query, "skip" if was_completed else "selected", "completed previously" if was_completed else "scheduled")
+    console.print(table)
+    console.print(f"Expected maximum requests: {plan.expected_max_requests}")
+    console.print(f"Expected maximum detail opens: {plan.expected_max_post_opens}")
+    console.print(f"Estimated runtime: {plan.estimated_runtime_minutes} minute(s)")
+    console.print(f"Previously completed: {sum(query in completed for query in plan.selected_queries)}")
+    if not yes and not typer.confirm("Approve this crawl plan?"):
+        raise typer.Abort()
+    console.print("Plan approved. No crawl was started by plan-crawl.")
+
+
+@app.command("research")
+def insurance_research(
+    industry: str = "insurance",
+    country: str = "malaysia",
+    research_question: str = "all",
+    recent_days: int = 180,
+    query_limit: int | None = None,
+    posts_per_query: int = 10,
+    fetch_comments: bool = False,
+    max_comments_per_post: int = 50,
+    resume: bool = False,
+    incremental: bool = True,
+    force_refresh: bool = False,
+    max_runtime_minutes: int = 90,
+    max_total_requests: int = 250,
+    max_detail_posts: int = 100,
+    max_comment_requests: int = 150,
+    controlled_test: bool = False,
+    dry_run: bool = False,
+) -> None:
+    """Run staged, incremental Malaysia insurance research with conservative limits."""
+    if industry.lower() != "insurance" or country.lower() != "malaysia":
+        raise typer.BadParameter("This command currently supports --industry insurance --country malaysia")
+    if research_question not in INSURANCE_RESEARCH_QUESTIONS:
+        raise typer.BadParameter(f"--research-question must be one of: {', '.join(INSURANCE_RESEARCH_QUESTIONS)}")
+    config = load_insurance_config()
+    queries = list(CONTROLLED_QUERIES) if controlled_test else insurance_queries(research_question, query_limit)
+    if controlled_test:
+        posts_per_query = min(posts_per_query, 10)
+        max_comments_per_post = min(max_comments_per_post, 30)
+        max_runtime_minutes = min(max_runtime_minutes, 45)
+        max_detail_posts = min(max_detail_posts, 30)
+        config.crawl_limits.max_detail_posts_per_query = 5
+        config.risk_control.stop_on_first_risk_event = True
+    elif query_limit:
+        queries = queries[:query_limit]
+    _print_insurance_plan(
+        queries, posts_per_query, max_detail_posts, max_comment_requests,
+        max_runtime_minutes, config.open_fraction,
+    )
+    if dry_run:
+        return
+    client = XHSClient()
+    if not client.is_installed():
+        console.print("[red]xhs CLI not found.[/red] Install with: uv tool install xiaohongshu-cli")
+        raise typer.Exit(code=1)
+    resume_command = (
+        "python main.py research --industry insurance --country malaysia "
+        f"--research-question {research_question} --recent-days {recent_days} "
+        f"--query-limit {len(queries)} --posts-per-query {posts_per_query} --incremental --resume"
+    )
+    crawler = InsuranceCrawler(Storage(), client, config)
+    metrics = crawler.run(
+        queries, recent_days=recent_days, posts_per_query=posts_per_query,
+        fetch_comments=fetch_comments, max_comments_per_post=max_comments_per_post,
+        max_runtime_minutes=max_runtime_minutes, max_total_requests=max_total_requests,
+        max_detail_posts=max_detail_posts, max_comment_requests=max_comment_requests,
+        incremental=incremental or resume, force_refresh=force_refresh,
+        resume_command=resume_command,
+    )
+    _print_insurance_metrics(metrics)
+    if metrics.stopped_reason:
+        console.print(f"Resume with: [bold]{resume_command}[/bold]")
+    paths = generate_insurance_reports(Storage())
+    console.print(f"Generated {len(paths)} insurance report/interface files.")
+
+
+@app.command("insurance-report")
+def insurance_report() -> None:
+    """Generate insurance reports from stored data without crawling."""
+    paths = generate_insurance_reports(Storage())
+    table = Table("Output", "Path")
+    for name, path in paths.items():
+        table.add_row(name, str(path))
+    console.print(table)
+
+
+@app.command("import-insurance-browser")
+def import_insurance_browser(
+    discovery_path: Path = Path("data/raw/2026-07-19/insurance/chrome_insurance_discovery.json"),
+    details_path: Path = Path("data/raw/2026-07-19/insurance/chrome_insurance_details.json"),
+) -> None:
+    """Import a controlled Chrome insurance crawl, then regenerate reports."""
+    metrics = import_browser_insurance(Storage(), discovery_path, details_path)
+    _print_insurance_metrics(metrics)
+    paths = generate_insurance_reports(Storage())
+    console.print(f"Generated {len(paths)} insurance report/interface files.")
+
+
 @app.command("repair-browser-raw")
 def repair_browser_raw(
     raw_path: Path = Path("data/raw/2026-07-19/chrome_rednote_malaysia_property_5.json"),
@@ -383,6 +512,37 @@ def _print_dry_run(keywords: list[str], max_posts: int, fetch_comments: bool, ma
     table.add_row("max_comments_per_post", str(max_comments))
     table.add_row("sort", sort)
     table.add_row("delay", f"{delay_min}-{delay_max}s")
+    console.print(table)
+
+
+def _print_insurance_plan(queries, posts_per_query, max_detail_posts, max_comment_requests, runtime, open_fraction) -> None:
+    table = Table("#", "Insurance query")
+    for index, query in enumerate(queries, start=1):
+        table.add_row(str(index), query)
+    console.print(table)
+    expected_opens = min(max_detail_posts, sum(max(1, int(posts_per_query * open_fraction)) for _ in queries))
+    console.print(f"Discovery requests: {len(queries)}")
+    console.print(f"Maximum discovered posts: {len(queries) * posts_per_query}")
+    console.print(f"Expected maximum detail opens after pre-filtering: {expected_opens}")
+    console.print(f"Maximum comment requests: {min(max_comment_requests, expected_opens)}")
+    console.print(f"Maximum runtime: {runtime} minute(s); one active request at a time")
+
+
+def _print_insurance_metrics(metrics) -> None:
+    table = Table("Metric", "Count")
+    for label, value in (
+        ("Discovered posts", metrics.discovered_posts),
+        ("Detail posts opened", metrics.detail_posts_opened),
+        ("Comment threads fetched", metrics.comment_threads_fetched),
+        ("Requests avoided", metrics.requests_avoided),
+        ("Duplicate comments", metrics.duplicate_comments),
+        ("Rejected promotional posts", metrics.rejected_promotional_posts),
+        ("Active purchase requests", metrics.active_purchase_requests),
+        ("Recommendation requests", metrics.recommendation_requests),
+        ("Switching signals", metrics.switching_signals),
+        ("Claim-help signals", metrics.claim_help_signals),
+    ):
+        table.add_row(label, str(value))
     console.print(table)
 
 

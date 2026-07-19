@@ -5,7 +5,7 @@ import Link from "next/link";
 import { Menu, X, Radio } from "lucide-react";
 
 interface NavbarProps {
-  onOpenEarlyAccess: () => void;
+  onOpenEarlyAccess?: () => void;
 }
 
 export default function Navbar({ onOpenEarlyAccess }: NavbarProps) {
@@ -25,10 +25,11 @@ export default function Navbar({ onOpenEarlyAccess }: NavbarProps) {
   }, []);
 
   const navLinks = [
-    { name: "How It Works", href: "#how-it-works" },
-    { name: "Industries", href: "#industries" },
-    { name: "Free Report", href: "#free-report" },
-    { name: "Pricing", href: "#pricing" },
+    { name: "How It Works", href: "/#how-it-works" },
+    { name: "Industries", href: "/#industries" },
+    { name: "Free Report", href: "/#free-report" },
+    { name: "Sample Report", href: "/reports/malaysia-insurance" },
+    { name: "Pricing", href: "/#pricing" },
   ];
 
   return (
@@ -54,7 +55,7 @@ export default function Navbar({ onOpenEarlyAccess }: NavbarProps) {
           </Link>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center gap-8">
+          <div className="hidden md:flex items-center gap-6">
             <div className="flex items-center gap-6">
               {navLinks.map((link) => (
                 <Link
@@ -68,17 +69,17 @@ export default function Navbar({ onOpenEarlyAccess }: NavbarProps) {
             </div>
             <div className="flex items-center gap-4 border-l border-slate-200 pl-6">
               <Link
-                href="#pricing"
+                href="/#pricing"
                 className="text-sm font-medium text-slate-600 hover:text-primary transition-colors"
               >
                 Sign In
               </Link>
-              <button
+              {onOpenEarlyAccess ? <button
                 onClick={onOpenEarlyAccess}
                 className="bg-primary hover:bg-primary-dark text-white text-sm font-semibold px-4 py-2 rounded-xl transition-all shadow-sm hover:shadow-md active:scale-95"
               >
                 Get Early Access
-              </button>
+              </button> : <Link href="/#free-report" className="bg-primary hover:bg-primary-dark text-white text-sm font-semibold px-4 py-2 rounded-lg transition-all shadow-sm">Get Free Report</Link>}
             </div>
           </div>
 
@@ -111,13 +112,13 @@ export default function Navbar({ onOpenEarlyAccess }: NavbarProps) {
             ))}
             <hr className="border-slate-200 my-2" />
             <Link
-              href="#pricing"
+              href="/#pricing"
               onClick={() => setIsOpen(false)}
               className="text-base font-medium text-slate-600 hover:text-primary py-2 px-3 rounded-lg hover:bg-slate-50 transition-colors"
             >
               Sign In
             </Link>
-            <button
+            {onOpenEarlyAccess ? <button
               onClick={() => {
                 setIsOpen(false);
                 onOpenEarlyAccess();
@@ -125,7 +126,7 @@ export default function Navbar({ onOpenEarlyAccess }: NavbarProps) {
               className="bg-primary hover:bg-primary-dark text-white text-center text-base font-semibold py-3 rounded-xl transition-all shadow-sm active:scale-[0.98]"
             >
               Get Early Access
-            </button>
+            </button> : <Link href="/#free-report" onClick={() => setIsOpen(false)} className="bg-primary hover:bg-primary-dark text-white text-center text-base font-semibold py-3 rounded-lg transition-all shadow-sm">Get Free Report</Link>}
           </div>
         </div>
       )}
