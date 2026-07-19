@@ -1,14 +1,14 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Filter, RefreshCw, X, HelpCircle, Shield, Link as LinkIcon, ExternalLink } from "lucide-react";
+import { Filter, RefreshCw, X, HelpCircle, Shield, Link as LinkIcon, ExternalLink, Play, Pause, Radio } from "lucide-react";
 import OpportunityCard, { Opportunity } from "./opportunity-card";
 
-// Sample opportunities
-const opportunities: Opportunity[] = [
+// Initial starting dataset
+const initialOpportunities: Opportunity[] = [
   {
-    id: "1",
+    id: "init-1",
     quote: "My medical card premium went up again. Thinking of changing. What should I compare first?",
     industry: "Insurance",
     location: "Selangor",
@@ -18,7 +18,7 @@ const opportunities: Opportunity[] = [
     source: "Forum Thread #391",
   },
   {
-    id: "2",
+    id: "init-2",
     quote: "Any reliable agent for a condo rental around Mont Kiara?",
     industry: "Property",
     location: "Kuala Lumpur",
@@ -28,7 +28,7 @@ const opportunities: Opportunity[] = [
     source: "Local Community Group",
   },
   {
-    id: "3",
+    id: "init-3",
     quote: "Looking for a family SUV below RM120k. CX-5 or something else?",
     industry: "Automotive",
     location: "Kuala Lumpur",
@@ -38,7 +38,7 @@ const opportunities: Opportunity[] = [
     source: "Car Lovers Malaysia",
   },
   {
-    id: "4",
+    id: "init-4",
     quote: "Which tuition centre is good for SPM science near PJ?",
     industry: "Education",
     location: "Selangor",
@@ -48,7 +48,7 @@ const opportunities: Opportunity[] = [
     source: "Parenting Forum",
   },
   {
-    id: "5",
+    id: "init-5",
     quote: "Need a trustworthy contractor for kitchen renovation in Puchong.",
     industry: "Renovation",
     location: "Selangor",
@@ -58,7 +58,7 @@ const opportunities: Opportunity[] = [
     source: "Taman Puchong Residents FB",
   },
   {
-    id: "6",
+    id: "init-6",
     quote: "Anyone tried treatment for acne scars in KL? Looking for honest recommendations.",
     industry: "Beauty",
     location: "Kuala Lumpur",
@@ -75,6 +75,65 @@ export default function OpportunityFeed() {
   const [selectedLocation, setSelectedLocation] = useState<string>("All");
   const [activeModalOpp, setActiveModalOpp] = useState<Opportunity | null>(null);
 
+  // Live streaming states
+  const [isLive, setIsLive] = useState(true);
+  const [displayedOpps, setDisplayedOpps] = useState<Opportunity[]>(initialOpportunities);
+  const [allLiveOpps, setAllLiveOpps] = useState<Opportunity[]>([]);
+  const [newSignalFlash, setNewSignalFlash] = useState(false);
+  const rotateIndex = useRef(0);
+
+  // Fetch live feed data from API
+  useEffect(() => {
+    fetch("/api/live-opportunities")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && data.opportunities?.length > 0) {
+          setAllLiveOpps(data.opportunities);
+        }
+      })
+      .catch((err) => console.warn("Failed to fetch live opportunities:", err));
+  }, []);
+
+  // Set up the interval for real time rotation
+  useEffect(() => {
+    if (!isLive || allLiveOpps.length === 0) return;
+
+    const interval = setInterval(() => {
+      // Pick next opportunity from list
+      const idx = rotateIndex.current % allLiveOpps.length;
+      const baseOpp = allLiveOpps[idx];
+      rotateIndex.current += 1;
+
+      // Assign dynamic unique ID and set time to just now
+      const newOpp: Opportunity = {
+        ...baseOpp,
+        id: `live-${Date.now()}-${idx}`,
+        time: "Just now",
+      };
+
+      // Add to displayed cards, updating timestamps of older ones, and keeping max 6
+      setDisplayedOpps((prev) => {
+        const updatedPrev = prev.map((item) => {
+          if (item.time === "Just now") return { ...item, time: "1m ago" };
+          if (item.time === "1m ago") return { ...item, time: "3m ago" };
+          if (item.time === "3m ago") return { ...item, time: "12m ago" };
+          if (item.time === "12m ago") return { ...item, time: "34m ago" };
+          if (item.time === "34m ago") return { ...item, time: "55m ago" };
+          return { ...item, time: "1h ago" };
+        });
+        return [newOpp, ...updatedPrev].slice(0, 6);
+      });
+
+      // Trigger signal visual alert
+      setNewSignalFlash(true);
+      const flashTimeout = setTimeout(() => setNewSignalFlash(false), 1500);
+
+      return () => clearTimeout(flashTimeout);
+    }, 4500); // Rotate every 4.5 seconds
+
+    return () => clearInterval(interval);
+  }, [isLive, allLiveOpps]);
+
   // Filtering options
   const industries = ["All", "Insurance", "Property", "Automotive", "Education", "Renovation", "Beauty"];
   const signals = ["All", "Looking for recommendation", "Considering switch", "Asking for help", "Comparing options", "Complaint"];
@@ -82,13 +141,33 @@ export default function OpportunityFeed() {
 
   // Filtered dataset
   const filteredOpportunities = useMemo(() => {
-    return opportunities.filter((opp) => {
+    // If we have filters active, we don't display rotating live feed, we filter the base dataset
+    const baseSet = (selectedIndustry === "All" && selectedSignal === "All" && selectedLocation === "All")
+      ? displayedOpps
+      : [...allLiveOpps, ...initialOpportunities];
+
+    // Deduplicate
+    const uniqueMap = new Map();
+    baseSet.forEach((item) => {
+      uniqueMap.set(item.quote, item);
+    });
+    const uniqueList = Array.from(uniqueMap.values());
+
+    return uniqueList.filter((opp) => {
       const matchInd = selectedIndustry === "All" || opp.industry.toLowerCase() === selectedIndustry.toLowerCase();
       const matchSig = selectedSignal === "All" || opp.signal.toLowerCase() === selectedSignal.toLowerCase();
       const matchLoc = selectedLocation === "All" || opp.location.toLowerCase() === selectedLocation.toLowerCase();
       return matchInd && matchSig && matchLoc;
     });
-  }, [selectedIndustry, selectedSignal, selectedLocation]);
+  }, [selectedIndustry, selectedSignal, selectedLocation, displayedOpps, allLiveOpps]);
+
+  // Disable live stream when user applies filters to avoid disrupting their review
+  const handleFilterChange = (type: "industry" | "signal" | "location", value: string) => {
+    if (type === "industry") setSelectedIndustry(value);
+    if (type === "signal") setSelectedSignal(value);
+    if (type === "location") setSelectedLocation(value);
+    setIsLive(false);
+  };
 
   return (
     <section id="demo-feed" className="py-20 bg-slate-50 border-y border-slate-200/60">
@@ -98,33 +177,90 @@ export default function OpportunityFeed() {
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
           <div>
             <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-primary/10 text-primary-dark text-xs font-bold mb-3 uppercase tracking-wider">
-              Live Mockup Feed
+              Real-Time Opportunity Feed
             </div>
             <h3 className="text-3xl sm:text-4xl font-extrabold text-navy tracking-tight">
               See public opportunities in real time.
             </h3>
             <p className="text-slate-500 text-sm mt-2 max-w-xl">
-              Filter the demo stream below to see how CariLead detects public demand signals. Real dashboard updates every few seconds.
+              CariLead detects public demand signals. Watch new comments and recommendation requests arrive on the dashboard feed.
             </p>
           </div>
           
-          {/* Active status pulse */}
-          <div className="flex items-center gap-2 bg-white px-4 py-2 border border-slate-200 rounded-xl shadow-sm self-start md:self-auto">
-            <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
-            </span>
-            <span className="text-[11px] font-bold text-navy">
-              Scanning: 1,429 sources active
-            </span>
+          {/* Active status pulse & toggle */}
+          <div className="flex flex-wrap items-center gap-3 self-start md:self-auto">
+            {/* Live Indicator */}
+            <div className="flex items-center gap-2 bg-white px-4 py-2.5 border border-slate-200 rounded-xl shadow-sm">
+              <span className="relative flex h-2 w-2">
+                {isLive && (
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+                )}
+                <span className={`relative inline-flex rounded-full h-2 w-2 ${isLive ? "bg-primary" : "bg-slate-400"}`}></span>
+              </span>
+              <span className="text-[11px] font-bold text-navy">
+                {isLive ? "STREAMING LIVE" : "STREAM PAUSED"}
+              </span>
+            </div>
+
+            {/* Toggle Streaming Button */}
+            <button
+              onClick={() => {
+                setIsLive(!isLive);
+                if (!isLive) {
+                  // Reset filters to view live stream
+                  setSelectedIndustry("All");
+                  setSelectedSignal("All");
+                  setSelectedLocation("All");
+                }
+              }}
+              className={`flex items-center gap-1 px-4 py-2.5 rounded-xl border text-[11px] font-bold transition-all shadow-sm ${
+                isLive
+                  ? "bg-slate-100 hover:bg-slate-200 border-slate-300 text-slate-700"
+                  : "bg-primary hover:bg-primary-dark border-primary text-white"
+              }`}
+            >
+              {isLive ? (
+                <>
+                  <Pause className="w-3.5 h-3.5" /> Pause Stream
+                </>
+              ) : (
+                <>
+                  <Play className="w-3.5 h-3.5 fill-white" /> Resume Live
+                </>
+              )}
+            </button>
           </div>
         </div>
 
+        {/* New Signal Flash Banner */}
+        <AnimatePresence>
+          {newSignalFlash && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="bg-emerald-500 text-white text-xs font-bold px-4 py-2.5 rounded-xl shadow-md mb-6 text-center flex items-center justify-center gap-1.5"
+            >
+              <Radio className="w-4 h-4 animate-pulse" />
+              <span>NEW OPPORTUNITY DETECTED BY CARILEAD ENGINE</span>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         {/* Filters Controls Panel */}
         <div className="bg-white border border-slate-200 rounded-2xl shadow-sm p-5 mb-8 flex flex-col gap-5">
-          <div className="flex items-center gap-2 text-navy border-b border-slate-100 pb-3">
-            <Filter className="w-4 h-4 text-slate-500" />
-            <span className="text-sm font-bold">Filter Dashboard Feed</span>
+          <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+            <div className="flex items-center gap-2 text-navy">
+              <Filter className="w-4 h-4 text-slate-500" />
+              <span className="text-sm font-bold">Filter Dashboard Feed</span>
+            </div>
+            
+            {/* Auto-pause warning if user starts filtering */}
+            {(selectedIndustry !== "All" || selectedSignal !== "All" || selectedLocation !== "All") && (
+              <span className="text-[10px] text-amber-600 font-bold bg-amber-50 border border-amber-100 px-2.5 py-1 rounded-lg">
+                ⚠️ Live stream paused (filters active)
+              </span>
+            )}
           </div>
 
           <div className="grid sm:grid-cols-3 gap-4">
@@ -135,7 +271,7 @@ export default function OpportunityFeed() {
               </label>
               <select
                 value={selectedIndustry}
-                onChange={(e) => setSelectedIndustry(e.target.value)}
+                onChange={(e) => handleFilterChange("industry", e.target.value)}
                 className="w-full text-sm bg-[#F8FAFC] border border-slate-200 text-navy font-semibold rounded-xl p-3 focus:outline-none focus:border-primary/50 transition-colors cursor-pointer"
               >
                 {industries.map((ind) => (
@@ -153,7 +289,7 @@ export default function OpportunityFeed() {
               </label>
               <select
                 value={selectedSignal}
-                onChange={(e) => setSelectedSignal(e.target.value)}
+                onChange={(e) => handleFilterChange("signal", e.target.value)}
                 className="w-full text-sm bg-[#F8FAFC] border border-slate-200 text-navy font-semibold rounded-xl p-3 focus:outline-none focus:border-primary/50 transition-colors cursor-pointer"
               >
                 {signals.map((sig) => (
@@ -171,7 +307,7 @@ export default function OpportunityFeed() {
               </label>
               <select
                 value={selectedLocation}
-                onChange={(e) => setSelectedLocation(e.target.value)}
+                onChange={(e) => handleFilterChange("location", e.target.value)}
                 className="w-full text-sm bg-[#F8FAFC] border border-slate-200 text-navy font-semibold rounded-xl p-3 focus:outline-none focus:border-primary/50 transition-colors cursor-pointer"
               >
                 {locations.map((loc) => (
@@ -186,15 +322,25 @@ export default function OpportunityFeed() {
 
         {/* Demo Cards Grid */}
         {filteredOpportunities.length > 0 ? (
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredOpportunities.map((opp) => (
-              <OpportunityCard
-                key={opp.id}
-                opp={opp}
-                onViewSource={(o) => setActiveModalOpp(o)}
-              />
-            ))}
-          </div>
+          <motion.div layout className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <AnimatePresence mode="popLayout">
+              {filteredOpportunities.map((opp) => (
+                <motion.div
+                  key={opp.id}
+                  layout
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.95 }}
+                  transition={{ duration: 0.4 }}
+                >
+                  <OpportunityCard
+                    opp={opp}
+                    onViewSource={(o) => setActiveModalOpp(o)}
+                  />
+                </motion.div>
+              ))}
+            </AnimatePresence>
+          </motion.div>
         ) : (
           <div className="bg-white border border-slate-200/80 rounded-2xl p-12 text-center shadow-sm">
             <HelpCircle className="w-12 h-12 text-slate-300 mx-auto mb-4" />
@@ -205,10 +351,11 @@ export default function OpportunityFeed() {
                 setSelectedIndustry("All");
                 setSelectedSignal("All");
                 setSelectedLocation("All");
+                setIsLive(true);
               }}
               className="mt-4 text-xs font-bold text-primary hover:underline"
             >
-              Reset Filters
+              Reset Filters & Resume Live Stream
             </button>
           </div>
         )}

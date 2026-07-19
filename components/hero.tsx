@@ -1,13 +1,56 @@
 "use client";
 
-import { motion } from "framer-motion";
-import { ArrowRight, Play, Compass, ShieldAlert, Sparkles, MapPin, Clock, ArrowUpRight, MessageSquare } from "lucide-react";
+import { useEffect, useState, useRef } from "react";
+import Link from "next/link";
+import { motion, AnimatePresence } from "framer-motion";
+import { ArrowRight, Play, Compass, ShieldAlert, Sparkles, MapPin, Clock, ArrowUpRight, MessageSquare, Radio } from "lucide-react";
 
 interface HeroProps {
   onOpenEarlyAccess: () => void;
 }
 
+const rotatingSignals = [
+  { text: "Medical card premium AIA naik lagi 30%. Prudential or Great Eastern okay?", category: "Insurance", location: "Selangor" },
+  { text: "Looking for a reliable property agent in Cheras.", category: "Property", location: "Kuala Lumpur" },
+  { text: "First time buying medical card in Malaysia. What to check?", category: "Insurance", location: "Kuala Lumpur" },
+  { text: "Any recommended chemistry tuition class in Subang Jaya?", category: "Education", location: "Selangor" },
+  { text: "Renovation contractor delayed 2 months. Need advice.", category: "Renovation", location: "Johor" },
+  { text: "SUV budget RM150k. Mazda CX5 vs Chery Tiggo 8 Pro?", category: "Automotive", location: "Penang" },
+  { text: "Landlord refuse to return deposit (RM5000+) in Mont Kiara.", category: "Property", location: "Kuala Lumpur" },
+  { text: "Anyone tried treatment for acne scars in KL? Recommendations?", category: "Beauty", location: "Kuala Lumpur" }
+];
+
 export default function Hero({ onOpenEarlyAccess }: HeroProps) {
+  const [currentSignal, setCurrentSignal] = useState(rotatingSignals[0]);
+  const signalIndex = useRef(0);
+
+  useEffect(() => {
+    // Check if we can fetch live data, fallback to templates
+    fetch("/api/live-opportunities")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && data.opportunities?.length > 0) {
+          // Merge with our existing rotating list
+          const formatted = data.opportunities.map((opp: any) => ({
+            text: opp.quote,
+            category: opp.industry,
+            location: opp.location
+          }));
+          rotatingSignals.push(...formatted);
+        }
+      })
+      .catch((err) => console.warn("Failed to fetch live opportunities for hero:", err));
+  }, []);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      signalIndex.current = (signalIndex.current + 1) % rotatingSignals.length;
+      setCurrentSignal(rotatingSignals[signalIndex.current]);
+    }, 4500); // Rotate every 4.5s
+
+    return () => clearInterval(interval);
+  }, []);
+
   return (
     <section className="relative overflow-hidden pt-32 pb-20 md:pt-40 md:pb-28 bg-[#F8FAFC]">
       {/* Background patterns */}
@@ -54,13 +97,13 @@ export default function Hero({ onOpenEarlyAccess }: HeroProps) {
               transition={{ duration: 0.6, delay: 0.3 }}
               className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto"
             >
-              <a
-                href="#free-report"
+              <Link
+                href="/reports/malaysia-insurance"
                 className="bg-primary hover:bg-primary-dark text-white text-base font-semibold px-6 py-4 rounded-xl shadow-lg hover:shadow-xl hover:shadow-primary/20 transition-all flex items-center justify-center gap-2 group active:scale-95"
               >
-                Get Free Weekly Leads Report
+                Sample Insurance Leads Report
                 <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-              </a>
+              </Link>
               <a
                 href="#how-it-works"
                 className="bg-white hover:bg-slate-50 text-slate-700 font-semibold px-6 py-4 rounded-xl border border-slate-200 hover:border-slate-300 transition-all flex items-center justify-center gap-2 shadow-sm active:scale-95"
@@ -148,7 +191,7 @@ export default function Hero({ onOpenEarlyAccess }: HeroProps) {
                     </div>
                     <span className="flex items-center gap-1 font-semibold text-primary hover:underline text-[11px] cursor-pointer">
                       View Public Source
-                      <ArrowUpRight className="w-3 h-3" />
+                      <ArrowUpRight className="w-3.5 h-3" />
                     </span>
                   </div>
                 </motion.div>
@@ -183,7 +226,7 @@ export default function Hero({ onOpenEarlyAccess }: HeroProps) {
                     </div>
                     <span className="flex items-center gap-1 font-semibold text-primary hover:underline text-[11px] cursor-pointer">
                       View Public Source
-                      <ArrowUpRight className="w-3 h-3" />
+                      <ArrowUpRight className="w-3.5 h-3" />
                     </span>
                   </div>
                 </motion.div>
@@ -218,7 +261,7 @@ export default function Hero({ onOpenEarlyAccess }: HeroProps) {
                     </div>
                     <span className="flex items-center gap-1 font-semibold text-primary hover:underline text-[11px] cursor-pointer">
                       View Public Source
-                      <ArrowUpRight className="w-3 h-3" />
+                      <ArrowUpRight className="w-3.5 h-3" />
                     </span>
                   </div>
                 </motion.div>
@@ -236,20 +279,40 @@ export default function Hero({ onOpenEarlyAccess }: HeroProps) {
               </div>
             </motion.div>
 
-            {/* Small Floating badge */}
-            <motion.div
-              animate={{ y: [0, -6, 0] }}
-              transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-              className="absolute -top-6 -right-4 hidden md:flex items-center gap-2.5 bg-white border border-slate-200 p-3 rounded-xl shadow-lg z-20"
-            >
-              <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary">
-                <MessageSquare className="w-4 h-4" />
-              </div>
-              <div>
-                <div className="text-[11px] font-bold text-navy leading-none">New Signal Detected</div>
-                <div className="text-[9px] text-slate-400 mt-0.5">Automotive: Kuala Lumpur</div>
-              </div>
-            </motion.div>
+            {/* Rotating Live Signal Detected Badge */}
+            <div className="absolute -top-10 -right-4 z-20 w-72">
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={currentSignal.text}
+                  initial={{ y: -30, opacity: 0, scale: 0.95 }}
+                  animate={{ y: 0, opacity: 1, scale: 1 }}
+                  exit={{ y: 30, opacity: 0, scale: 0.95 }}
+                  transition={{ type: "spring", stiffness: 100, damping: 15 }}
+                  className="flex flex-col gap-2 bg-white border border-slate-200 p-3.5 rounded-2xl shadow-xl border-t-2 border-t-primary"
+                >
+                  <div className="flex items-center justify-between gap-2 border-b border-slate-100 pb-1.5">
+                    <div className="flex items-center gap-1.5">
+                      <Radio className="w-3.5 h-3.5 text-primary animate-pulse" />
+                      <span className="text-[10px] font-bold text-navy tracking-wider uppercase">Live Crawl Signal</span>
+                    </div>
+                    <span className="text-[8px] font-semibold text-slate-400 uppercase">Just now</span>
+                  </div>
+                  
+                  <p className="text-[11px] leading-relaxed text-slate-600 font-medium italic">
+                    &ldquo;{currentSignal.text}&rdquo;
+                  </p>
+
+                  <div className="flex items-center justify-between text-[9px] text-slate-400 font-semibold pt-1">
+                    <span className="bg-primary/5 text-primary-dark font-extrabold px-1.5 py-0.5 rounded text-[8px]">
+                      {currentSignal.category}
+                    </span>
+                    <span className="flex items-center gap-0.5">
+                      <MapPin className="w-2.5 h-2.5 text-slate-400" /> {currentSignal.location}
+                    </span>
+                  </div>
+                </motion.div>
+              </AnimatePresence>
+            </div>
           </div>
         </div>
       </div>

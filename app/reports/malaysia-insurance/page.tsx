@@ -4,6 +4,7 @@ import { ArrowRight, Check, FileText, Search, X } from "lucide-react";
 import Footer from "@/components/footer";
 import Navbar from "@/components/navbar";
 import { OpportunityBrowser } from "@/components/reports/opportunity-browser";
+import { XhsDatabaseExplorer } from "@/components/reports/xhs-database-explorer";
 import { DemoLabel, Methodology, ReportCta, SectionHeading, TrendBadge, TrendChart } from "@/components/reports/report-ui";
 import { comparisonRows, insurerMentions, opportunities, productThemes, reportMeta, themes } from "@/data/sample-insurance-report";
 
@@ -74,6 +75,14 @@ export default function MalaysiaInsuranceReport() {
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <SectionHeading eyebrow="Opportunity feed" title="Eight public-conversation examples" description="Open any example to see the fact boundary, suggested response, and engagement guardrails." />
             <OpportunityBrowser opportunities={opportunities} />
+          </div>
+        </section>
+
+        {/* Real captured XHS Database Explorer */}
+        <section className="py-16 bg-[#F8FAFC]">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <SectionHeading eyebrow="Database Explorer" title="Captured XHS posts and comments details" description="Real-time capture stream showing posts, comments, and location signals retrieved by our XHS crawler." />
+            <XhsDatabaseExplorer />
           </div>
         </section>
 
