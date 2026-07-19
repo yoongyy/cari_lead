@@ -1,0 +1,134 @@
+problem_groups:
+  customer_acquisition:
+    - portal dependency
+    - expensive portal subscription
+    - expensive top-ups or credits
+    - rising advertising costs
+    - poor Facebook lead quality
+    - accidental form submissions
+    - difficulty finding owners
+    - difficulty getting listings
+    - cold calling fatigue
+    - WhatsApp account bans
+    - content creation difficulty
+    - personal-branding difficulty
+    - lack of differentiation
+    - platform algorithm dependency
+  lead_management_and_conversion:
+    - slow response
+    - after-hours leads
+    - lead qualification
+    - low buying power
+    - customer comparison shopping
+    - ghosting
+    - follow-up fatigue
+    - no-shows
+    - viewing coordination
+    - weak conversion
+    - long sales cycles
+    - duplicate leads
+    - spam leads
+    - fake leads
+  portal_problems:
+    - PropertyGuru pricing
+    - iProperty pricing
+    - credit or UC pricing
+    - unclear pricing
+    - discriminatory pricing
+    - forced bundles
+    - monopolistic perception
+    - renewal pressure
+    - low ROI
+    - still necessary despite cost
+    - lack of credible alternatives
+  agent_operations:
+    - listing management
+    - CRM
+    - contact management
+    - property matching
+    - owner data
+    - document preparation
+    - loan follow-up
+    - appointment scheduling
+    - cross-agent cooperation
+    - commission disputes
+    - agency fees
+    - tax and e-invoice burden
+    - training and onboarding
+  buyer_and_tenant_pain:
+    - fake listings
+    - outdated listings
+    - hidden prices
+    - forced WhatsApp contact
+    - spam after enquiry
+    - poor response
+    - rude agents
+    - unprofessional behaviour
+    - misleading photos
+    - deposit concerns
+    - scam concerns
+    - no transparent comparison
+    - hard to find trusted agents
+  landlord_and_seller_pain:
+    - unsolicited WhatsApp
+    - cold-call spam
+    - duplicate agent messages
+    - poor agent quality
+    - lack of updates
+    - unrealistic valuation
+    - commission concerns
+    - exclusive-listing pressure
+    - difficulty choosing agents
+  market_and_career_pain:
+    - considering leaving the industry
+    - income instability
+    - high entry cost
+    - high operating cost
+    - burnout
+    - too many agents
+    - weak differentiation
+    - difficult subsale market
+    - dependence on project sales
+  demand_and_opportunity_signals:
+    - asking for alternatives
+    - asking for software
+    - asking for better lead sources
+    - requesting automation
+    - requesting trusted-agent discovery
+    - requesting transparent pricing
+    - requesting owner acquisition tools
+    - requesting content tools
+    - requesting CRM or follow-up tools
+    - explicit willingness to pay
+    - explicit migration to another platform
+    - repeated workaround use
+stakeholder_roles:
+  - property_agent
+  - agency_owner
+  - buyer
+  - tenant
+  - landlord
+  - seller
+  - developer
+  - marketer
+  - software_vendor
+  - recruiter
+  - unknown
+evidence_types:
+  - personal_experience
+  - direct_observation
+  - explicit_complaint
+  - explicit_spending
+  - explicit_switch
+  - considering_switch
+  - request_for_recommendation
+  - request_for_solution
+  - feature_request
+  - workaround
+  - positive_outcome
+  - counterexample
+  - general_opinion
+  - hearsay
+  - promotion
+  - advertisement
+  - researcher_question

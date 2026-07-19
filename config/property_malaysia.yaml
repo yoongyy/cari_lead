@@ -1,0 +1,62 @@
+industry: property
+malaysia_threshold: 0.60
+request_delay:
+  min_seconds: 2
+  max_seconds: 5
+risk_control:
+  max_consecutive_errors: 3
+weights:
+  country: 0.45
+  city_state: 0.25
+  local_identifier: 0.25
+  brand_term: 0.20
+  language_mix: 0.15
+  china_only_penalty: -0.35
+keyword_groups:
+  location:
+    - 马来西亚房产
+    - 大马房产
+    - 吉隆坡房产
+    - 雪隆房产
+    - 新山房产
+    - 柔佛房产
+    - 槟城房产
+    - KL 房产
+    - JB 房产
+    - Malaysia property
+    - Malaysian property agent
+  industry:
+    - 马来西亚房产中介
+    - 大马地产经纪
+    - 房地产经纪
+    - PropertyGuru Malaysia
+    - iProperty Malaysia
+    - EdgeProp Malaysia
+    - Propviss
+    - REN Malaysia
+    - 地产经纪
+    - 房产代理
+  complaint:
+    - PropertyGuru 太贵
+    - PropertyGuru 涨价
+    - PropertyGuru 不值得
+    - 取消 PropertyGuru
+    - 不用 PropertyGuru
+    - 换平台
+    - 转去其他平台
+    - 房产平台收费
+    - 房产中介难做
+    - 地产经纪没有客户
+    - 房产客户难找
+    - 房地产假盘
+    - 假房源
+    - 房产 lead 不好
+    - lead quality
+    - 找不到客户
+    - 广告费太贵
+    - 佣金
+    - landing page
+    - 个人网站
+    - TikTok 找客户
+    - 小红书找客户
+    - Facebook 找客户

@@ -1,0 +1,14 @@
+.DS_Store
+.env
+.venv/
+__pycache__/
+.pytest_cache/
+*.pyc
+data/crawler.log
+data/research.sqlite3
+data/raw/*
+!data/raw/.gitkeep
+data/normalized/*
+!data/normalized/.gitkeep
+data/reports/*
+!data/reports/.gitkeep
