@@ -11,15 +11,17 @@ import FreeReport from "@/components/free-report";
 import ComparisonTable from "@/components/comparison-table";
 import IndustryCards from "@/components/industry-cards";
 import TrustSection from "@/components/trust-section";
-import Pricing from "@/components/pricing";
+// import Pricing from "@/components/pricing";
 import FounderStory from "@/components/founder-story";
 import FAQ from "@/components/faq";
 import EarlyAccessForm from "@/components/early-access-form";
 import Footer from "@/components/footer";
 import { ArrowRight, Sparkles } from "lucide-react";
+import { useLanguage } from "@/lib/language-context";
 
 export default function Home() {
   const [isEarlyAccessOpen, setIsEarlyAccessOpen] = useState(false);
+  const { language } = useLanguage();
 
   return (
     <>
@@ -55,7 +57,7 @@ export default function Home() {
         <TrustSection />
 
         {/* Pricing RM0 / RM99 / RM399 */}
-        <Pricing onOpenEarlyAccess={() => setIsEarlyAccessOpen(true)} />
+        {/* <Pricing onOpenEarlyAccess={() => setIsEarlyAccessOpen(true)} /> */}
 
         {/* Founder Story note */}
         <FounderStory />
@@ -71,15 +73,17 @@ export default function Home() {
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
             <div className="inline-flex items-center gap-1 px-2.5 py-1 rounded bg-primary/20 text-primary-light text-xs font-bold mb-6 border border-primary/30 uppercase tracking-widest">
               <Sparkles className="w-3.5 h-3.5" />
-              <span>Secure your slot</span>
+              <span>{language === "en" ? "Secure your slot" : "锁定您的席位"}</span>
             </div>
 
             <h3 className="text-3xl sm:text-4xl font-extrabold tracking-tight mb-4">
-              Your next customer may already be asking for help.
+              {language === "en" ? "Your next customer may already be asking for help." : "您的下一位客户可能已经在寻求帮助。"}
             </h3>
             
             <p className="text-slate-400 text-sm max-w-xl mx-auto mb-10 leading-relaxed font-semibold">
-              CariLead helps you find the conversation before your competitor does. No more cold lists. Start answering real queries.
+              {language === "en" 
+                ? "CariLead helps you find the conversation before your competitor does. No more cold lists. Start answering real queries."
+                : "CariLead 帮助您在竞争对手之前发现对话。告别冷冰冰的电话名单，开始解答真实的客户查询。"}
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
@@ -87,13 +91,13 @@ export default function Home() {
                 href="#free-report"
                 className="w-full sm:w-auto bg-primary hover:bg-primary-dark text-white font-bold py-4 px-8 rounded-xl transition-all shadow-md active:scale-[0.98] text-sm"
               >
-                Get Free Weekly Report
+                {language === "en" ? "Get Free Weekly Report" : "获取每周免费报告"}
               </a>
               <button
                 onClick={() => setIsEarlyAccessOpen(true)}
                 className="w-full sm:w-auto bg-slate-800 hover:bg-slate-700 text-white font-bold py-4 px-8 rounded-xl border border-slate-700 hover:border-slate-600 transition-all flex items-center justify-center gap-2 active:scale-[0.98] text-sm"
               >
-                <span>Join Early Access</span>
+                <span>{language === "en" ? "Join Early Access" : "加入早期体验"}</span>
                 <ArrowRight className="w-4 h-4" />
               </button>
             </div>

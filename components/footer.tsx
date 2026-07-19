@@ -2,16 +2,19 @@
 
 import Link from "next/link";
 import { Radio } from "lucide-react";
+import { useLanguage } from "@/lib/language-context";
 
 export default function Footer() {
+  const { language } = useLanguage();
+
   const links = [
-    { name: "How It Works", href: "/#how-it-works" },
-    { name: "Industries", href: "/#industries" },
-    { name: "Sample Report", href: "/reports/malaysia-insurance" },
-    { name: "Pricing", href: "/#pricing" },
-    { name: "Privacy", href: "#" },
-    { name: "Terms", href: "#" },
-    { name: "Contact", href: "#" },
+    { name: language === "en" ? "How It Works" : "运作原理", href: "/#how-it-works" },
+    { name: language === "en" ? "Industries" : "行业板块", href: "/#industries" },
+    { name: language === "en" ? "Sample Report" : "样本报告", href: "/reports/malaysia-insurance" },
+    // { name: "Pricing", href: "/#pricing" },
+    { name: language === "en" ? "Privacy" : "隐私政策", href: "#" },
+    { name: language === "en" ? "Terms" : "服务条款", href: "#" },
+    { name: language === "en" ? "Contact" : "联系我们", href: "#" },
   ];
 
   return (
@@ -47,10 +50,12 @@ export default function Footer() {
         {/* Footer Details */}
         <div className="pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
           <p className="text-[11px] leading-relaxed max-w-md text-center md:text-left">
-            CariLead helps businesses discover relevant public customer conversations. Results are signals, not guaranteed leads. We encourage transparent, helpful, and platform-compliant engagement.
+            {language === "en" 
+              ? "CariLead helps businesses discover relevant public customer conversations. Results are signals, not guaranteed leads. We encourage transparent, helpful, and platform-compliant engagement."
+              : "CariLead 帮助企业发现相关的公开客户对话。搜索结果为需求信号，非保证线索。我们提倡透明、互助且符合平台规范的沟通方式。"}
           </p>
           <p className="text-[11px] font-semibold text-center md:text-right shrink-0">
-            &copy; 2026 CariLead. All rights reserved.
+            &copy; 2026 CariLead. {language === "en" ? "All rights reserved." : "版权所有。"}
           </p>
         </div>
 

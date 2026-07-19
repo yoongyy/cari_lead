@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { MessageSquareText, FileText, MapPin, ThumbsUp, Link as LinkIcon, Calendar, Activity } from "lucide-react";
+import { useLanguage } from "@/lib/language-context";
 
 interface XhsPost {
   _id: string;
@@ -27,6 +28,7 @@ interface XhsComment {
 }
 
 export function XhsDatabaseExplorer() {
+  const { language } = useLanguage();
   const [activeTab, setActiveTab] = useState<"posts" | "comments">("posts");
   const [posts, setPosts] = useState<XhsPost[]>([]);
   const [comments, setComments] = useState<XhsComment[]>([]);
@@ -60,10 +62,10 @@ export function XhsDatabaseExplorer() {
           <div>
             <h3 className="text-sm font-bold text-navy flex items-center gap-1.5">
               <Activity className="w-4 h-4 text-primary" />
-              XHS Captured Database Explorer
+              {language === "en" ? "XHS Captured Database Explorer" : "小红书捕获数据库流览"}
             </h3>
             <p className="text-[10px] text-slate-400 font-semibold uppercase mt-0.5">
-              Showing raw records processed by crawl engine
+              {language === "en" ? "Showing raw records processed by analysis engine" : "显示分析引擎处理的原始交互记录"}
             </p>
           </div>
         </div>
@@ -79,7 +81,7 @@ export function XhsDatabaseExplorer() {
             }`}
           >
             <FileText className="w-3.5 h-3.5" />
-            Posts ({posts.length})
+            {language === "en" ? "Posts" : "帖子"} ({posts.length})
           </button>
           <button
             onClick={() => setActiveTab("comments")}
@@ -90,7 +92,7 @@ export function XhsDatabaseExplorer() {
             }`}
           >
             <MessageSquareText className="w-3.5 h-3.5" />
-            Comments ({comments.length})
+            {language === "en" ? "Comments" : "评论"} ({comments.length})
           </button>
         </div>
       </div>
@@ -100,7 +102,9 @@ export function XhsDatabaseExplorer() {
         {loading ? (
           <div className="flex flex-col items-center justify-center py-12 text-slate-400">
             <span className="animate-spin text-primary text-xl mb-3">📡</span>
-            <p className="text-xs font-semibold">Connecting to MongoDB capture stream...</p>
+            <p className="text-xs font-semibold">
+              {language === "en" ? "Connecting to MongoDB capture stream..." : "正在连接 MongoDB 捕获数据流..."}
+            </p>
           </div>
         ) : activeTab === "posts" ? (
           <div className="space-y-6">
@@ -121,7 +125,7 @@ export function XhsDatabaseExplorer() {
                   </div>
                   <span className="flex items-center gap-1">
                     <Calendar className="w-3 h-3" />
-                    crawled {new Date(post.crawled_at).toLocaleDateString()}
+                    {language === "en" ? "found " : "发现于 "} {new Date(post.crawled_at).toLocaleDateString()}
                   </span>
                 </div>
 
@@ -134,7 +138,7 @@ export function XhsDatabaseExplorer() {
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-slate-300 hover:text-primary transition-colors"
-                      title="View original post on XHS"
+                      title={language === "en" ? "View original post on XHS" : "查看小红书原始帖子"}
                     >
                       <LinkIcon className="w-3.5 h-3.5 shrink-0" />
                     </a>
@@ -149,22 +153,24 @@ export function XhsDatabaseExplorer() {
                 {/* Signal indicators & actions */}
                 <div className="flex flex-wrap items-center justify-between gap-3 mt-4">
                   <div className="flex flex-wrap gap-1.5">
-                    {post.malaysia_signals?.map((sig) => (
-                      <span
-                        key={sig}
-                        className="px-2 py-0.5 rounded bg-primary/5 border border-primary/10 text-[9px] font-bold text-primary-dark uppercase"
-                      >
-                        {sig}
-                      </span>
-                    ))}
+                    {post.malaysia_signals
+                      ?.filter((sig) => !sig.toLowerCase().startsWith("browser_location"))
+                      .map((sig) => (
+                        <span
+                          key={sig}
+                          className="px-2 py-0.5 rounded bg-primary/5 border border-primary/10 text-[9px] font-bold text-primary-dark uppercase"
+                        >
+                          {sig}
+                        </span>
+                      ))}
                   </div>
 
                   <div className="flex items-center gap-3 text-[10px] text-slate-400 font-semibold">
                     <span className="flex items-center gap-0.5">
-                      <ThumbsUp className="w-3 h-3" /> {post.likes || 0} likes
+                      <ThumbsUp className="w-3 h-3" /> {post.likes || 0} {language === "en" ? "likes" : "赞"}
                     </span>
                     <span>•</span>
-                    <span>{post.comment_count || 0} replies</span>
+                    <span>{post.comment_count || 0} {language === "en" ? "replies" : "条回复"}</span>
                   </div>
                 </div>
               </div>
@@ -192,7 +198,7 @@ export function XhsDatabaseExplorer() {
                     </div>
                     <span className="flex items-center gap-1">
                       <Calendar className="w-3 h-3" />
-                      crawled {new Date(comm.crawled_at).toLocaleDateString()}
+                      {language === "en" ? "found " : "发现于 "} {new Date(comm.crawled_at).toLocaleDateString()}
                     </span>
                   </div>
 
@@ -204,11 +210,11 @@ export function XhsDatabaseExplorer() {
                   {/* Context banner */}
                   <div className="flex flex-wrap items-center justify-between gap-3">
                     <p className="text-[10px] text-slate-400 font-semibold truncate max-w-sm">
-                      Context: <span className="text-slate-600 font-bold">{parentPost?.title || "XHS Insurance Discussion"}</span>
+                      {language === "en" ? "Context: " : "原始帖上下文: "} <span className="text-slate-600 font-bold">{parentPost?.title || (language === "en" ? "XHS Insurance Discussion" : "小红书保险话题讨论")}</span>
                     </p>
                     <div className="flex items-center gap-1 text-[10px] text-slate-400 font-semibold">
                       <ThumbsUp className="w-3 h-3 text-slate-400" />
-                      <span>{comm.likes || 0} likes</span>
+                      <span>{comm.likes || 0} {language === "en" ? "likes" : "赞"}</span>
                     </div>
                   </div>
                 </div>

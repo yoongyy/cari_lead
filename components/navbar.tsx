@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Menu, X, Radio } from "lucide-react";
+import { useLanguage } from "@/lib/language-context";
 
 interface NavbarProps {
   onOpenEarlyAccess?: () => void;
@@ -11,6 +12,7 @@ interface NavbarProps {
 export default function Navbar({ onOpenEarlyAccess }: NavbarProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const { language, setLanguage } = useLanguage();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -25,11 +27,10 @@ export default function Navbar({ onOpenEarlyAccess }: NavbarProps) {
   }, []);
 
   const navLinks = [
-    { name: "How It Works", href: "/#how-it-works" },
-    { name: "Industries", href: "/#industries" },
-    { name: "Free Report", href: "/#free-report" },
-    { name: "Sample Report", href: "/reports/malaysia-insurance" },
-    { name: "Pricing", href: "/#pricing" },
+    { name: language === "en" ? "How It Works" : "运作原理", href: "/#how-it-works" },
+    { name: language === "en" ? "Industries" : "行业板块", href: "/#industries" },
+    { name: language === "en" ? "Free Report" : "免费报告", href: "/#free-report" },
+    { name: language === "en" ? "Sample Report" : "样本报告", href: "/reports/malaysia-insurance" },
   ];
 
   return (
@@ -59,7 +60,7 @@ export default function Navbar({ onOpenEarlyAccess }: NavbarProps) {
             <div className="flex items-center gap-6">
               {navLinks.map((link) => (
                 <Link
-                  key={link.name}
+                  key={link.href}
                   href={link.href}
                   className="text-sm font-medium text-slate-600 hover:text-primary transition-colors"
                 >
@@ -68,18 +69,29 @@ export default function Navbar({ onOpenEarlyAccess }: NavbarProps) {
               ))}
             </div>
             <div className="flex items-center gap-4 border-l border-slate-200 pl-6">
-              <Link
-                href="/#pricing"
-                className="text-sm font-medium text-slate-600 hover:text-primary transition-colors"
+              {/* Language Switcher */}
+              <button
+                onClick={() => setLanguage(language === "en" ? "zh" : "en")}
+                className="text-xs font-bold px-2.5 py-1.5 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 transition-all"
               >
-                Sign In
-              </Link>
-              {onOpenEarlyAccess ? <button
-                onClick={onOpenEarlyAccess}
-                className="bg-primary hover:bg-primary-dark text-white text-sm font-semibold px-4 py-2 rounded-xl transition-all shadow-sm hover:shadow-md active:scale-95"
-              >
-                Get Early Access
-              </button> : <Link href="/#free-report" className="bg-primary hover:bg-primary-dark text-white text-sm font-semibold px-4 py-2 rounded-lg transition-all shadow-sm">Get Free Report</Link>}
+                {language === "en" ? "中文" : "EN"}
+              </button>
+
+              {onOpenEarlyAccess ? (
+                <button
+                  onClick={onOpenEarlyAccess}
+                  className="bg-primary hover:bg-primary-dark text-white text-sm font-semibold px-4 py-2 rounded-xl transition-all shadow-sm hover:shadow-md active:scale-95"
+                >
+                  {language === "en" ? "Get Early Access" : "获取早期访问"}
+                </button>
+              ) : (
+                <Link
+                  href="/#free-report"
+                  className="bg-primary hover:bg-primary-dark text-white text-sm font-semibold px-4 py-2 rounded-lg transition-all shadow-sm"
+                >
+                  {language === "en" ? "Get Free Report" : "获取免费报告"}
+                </Link>
+              )}
             </div>
           </div>
 
@@ -102,7 +114,7 @@ export default function Navbar({ onOpenEarlyAccess }: NavbarProps) {
           <div className="flex flex-col gap-3">
             {navLinks.map((link) => (
               <Link
-                key={link.name}
+                key={link.href}
                 href={link.href}
                 onClick={() => setIsOpen(false)}
                 className="text-base font-medium text-slate-600 hover:text-primary py-2 px-3 rounded-lg hover:bg-slate-50 transition-colors"
@@ -110,23 +122,42 @@ export default function Navbar({ onOpenEarlyAccess }: NavbarProps) {
                 {link.name}
               </Link>
             ))}
-            <hr className="border-slate-200 my-2" />
-            <Link
-              href="/#pricing"
-              onClick={() => setIsOpen(false)}
-              className="text-base font-medium text-slate-600 hover:text-primary py-2 px-3 rounded-lg hover:bg-slate-50 transition-colors"
-            >
-              Sign In
-            </Link>
-            {onOpenEarlyAccess ? <button
-              onClick={() => {
-                setIsOpen(false);
-                onOpenEarlyAccess();
-              }}
-              className="bg-primary hover:bg-primary-dark text-white text-center text-base font-semibold py-3 rounded-xl transition-all shadow-sm active:scale-[0.98]"
-            >
-              Get Early Access
-            </button> : <Link href="/#free-report" onClick={() => setIsOpen(false)} className="bg-primary hover:bg-primary-dark text-white text-center text-base font-semibold py-3 rounded-lg transition-all shadow-sm">Get Free Report</Link>}
+            
+            {/* Language Switcher for Mobile */}
+            <div className="flex items-center justify-between px-3 py-2 border-t border-slate-100">
+              <span className="text-sm font-medium text-slate-500">
+                {language === "en" ? "Language" : "语言"}
+              </span>
+              <button
+                onClick={() => {
+                  setLanguage(language === "en" ? "zh" : "en");
+                  setIsOpen(false);
+                }}
+                className="text-sm font-bold text-primary hover:underline"
+              >
+                {language === "en" ? "中文 (ZH)" : "English (EN)"}
+              </button>
+            </div>
+
+            {onOpenEarlyAccess ? (
+              <button
+                onClick={() => {
+                  setIsOpen(false);
+                  onOpenEarlyAccess();
+                }}
+                className="bg-primary hover:bg-primary-dark text-white text-center text-base font-semibold py-3 rounded-xl transition-all shadow-sm active:scale-[0.98]"
+              >
+                {language === "en" ? "Get Early Access" : "获取早期访问"}
+              </button>
+            ) : (
+              <Link
+                href="/#free-report"
+                onClick={() => setIsOpen(false)}
+                className="bg-primary hover:bg-primary-dark text-white text-center text-base font-semibold py-3 rounded-lg transition-all shadow-sm"
+              >
+                {language === "en" ? "Get Free Report" : "获取免费报告"}
+              </Link>
+            )}
           </div>
         </div>
       )}
