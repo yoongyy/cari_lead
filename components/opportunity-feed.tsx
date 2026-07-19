@@ -1,0 +1,339 @@
+"use client";
+
+import { useState, useMemo } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Filter, RefreshCw, X, HelpCircle, Shield, Link as LinkIcon, ExternalLink } from "lucide-react";
+import OpportunityCard, { Opportunity } from "./opportunity-card";
+
+// Sample opportunities
+const opportunities: Opportunity[] = [
+  {
+    id: "1",
+    quote: "My medical card premium went up again. Thinking of changing. What should I compare first?",
+    industry: "Insurance",
+    location: "Selangor",
+    signal: "Considering switch",
+    time: "12m ago",
+    confidence: 94,
+    source: "Forum Thread #391",
+  },
+  {
+    id: "2",
+    quote: "Any reliable agent for a condo rental around Mont Kiara?",
+    industry: "Property",
+    location: "Kuala Lumpur",
+    signal: "Looking for recommendation",
+    time: "34m ago",
+    confidence: 98,
+    source: "Local Community Group",
+  },
+  {
+    id: "3",
+    quote: "Looking for a family SUV below RM120k. CX-5 or something else?",
+    industry: "Automotive",
+    location: "Kuala Lumpur",
+    signal: "Comparing options",
+    time: "55m ago",
+    confidence: 89,
+    source: "Car Lovers Malaysia",
+  },
+  {
+    id: "4",
+    quote: "Which tuition centre is good for SPM science near PJ?",
+    industry: "Education",
+    location: "Selangor",
+    signal: "Asking for help",
+    time: "2h ago",
+    confidence: 91,
+    source: "Parenting Forum",
+  },
+  {
+    id: "5",
+    quote: "Need a trustworthy contractor for kitchen renovation in Puchong.",
+    industry: "Renovation",
+    location: "Selangor",
+    signal: "Looking for recommendation",
+    time: "3h ago",
+    confidence: 96,
+    source: "Taman Puchong Residents FB",
+  },
+  {
+    id: "6",
+    quote: "Anyone tried treatment for acne scars in KL? Looking for honest recommendations.",
+    industry: "Beauty",
+    location: "Kuala Lumpur",
+    signal: "Complaint",
+    time: "4h ago",
+    confidence: 87,
+    source: "Beauty Review Portal",
+  },
+];
+
+export default function OpportunityFeed() {
+  const [selectedIndustry, setSelectedIndustry] = useState<string>("All");
+  const [selectedSignal, setSelectedSignal] = useState<string>("All");
+  const [selectedLocation, setSelectedLocation] = useState<string>("All");
+  const [activeModalOpp, setActiveModalOpp] = useState<Opportunity | null>(null);
+
+  // Filtering options
+  const industries = ["All", "Insurance", "Property", "Automotive", "Education", "Renovation", "Beauty"];
+  const signals = ["All", "Looking for recommendation", "Considering switch", "Asking for help", "Comparing options", "Complaint"];
+  const locations = ["All", "Kuala Lumpur", "Selangor", "Johor", "Penang"];
+
+  // Filtered dataset
+  const filteredOpportunities = useMemo(() => {
+    return opportunities.filter((opp) => {
+      const matchInd = selectedIndustry === "All" || opp.industry.toLowerCase() === selectedIndustry.toLowerCase();
+      const matchSig = selectedSignal === "All" || opp.signal.toLowerCase() === selectedSignal.toLowerCase();
+      const matchLoc = selectedLocation === "All" || opp.location.toLowerCase() === selectedLocation.toLowerCase();
+      return matchInd && matchSig && matchLoc;
+    });
+  }, [selectedIndustry, selectedSignal, selectedLocation]);
+
+  return (
+    <section id="demo-feed" className="py-20 bg-slate-50 border-y border-slate-200/60">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        {/* Section Header */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
+          <div>
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-primary/10 text-primary-dark text-xs font-bold mb-3 uppercase tracking-wider">
+              Live Mockup Feed
+            </div>
+            <h3 className="text-3xl sm:text-4xl font-extrabold text-navy tracking-tight">
+              See public opportunities in real time.
+            </h3>
+            <p className="text-slate-500 text-sm mt-2 max-w-xl">
+              Filter the demo stream below to see how CariLead detects public demand signals. Real dashboard updates every few seconds.
+            </p>
+          </div>
+          
+          {/* Active status pulse */}
+          <div className="flex items-center gap-2 bg-white px-4 py-2 border border-slate-200 rounded-xl shadow-sm self-start md:self-auto">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
+            </span>
+            <span className="text-[11px] font-bold text-navy">
+              Scanning: 1,429 sources active
+            </span>
+          </div>
+        </div>
+
+        {/* Filters Controls Panel */}
+        <div className="bg-white border border-slate-200 rounded-2xl shadow-sm p-5 mb-8 flex flex-col gap-5">
+          <div className="flex items-center gap-2 text-navy border-b border-slate-100 pb-3">
+            <Filter className="w-4 h-4 text-slate-500" />
+            <span className="text-sm font-bold">Filter Dashboard Feed</span>
+          </div>
+
+          <div className="grid sm:grid-cols-3 gap-4">
+            {/* Industry Filter */}
+            <div>
+              <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
+                Industry
+              </label>
+              <select
+                value={selectedIndustry}
+                onChange={(e) => setSelectedIndustry(e.target.value)}
+                className="w-full text-sm bg-[#F8FAFC] border border-slate-200 text-navy font-semibold rounded-xl p-3 focus:outline-none focus:border-primary/50 transition-colors cursor-pointer"
+              >
+                {industries.map((ind) => (
+                  <option key={ind} value={ind}>
+                    {ind}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Signal Filter */}
+            <div>
+              <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
+                Signal Type
+              </label>
+              <select
+                value={selectedSignal}
+                onChange={(e) => setSelectedSignal(e.target.value)}
+                className="w-full text-sm bg-[#F8FAFC] border border-slate-200 text-navy font-semibold rounded-xl p-3 focus:outline-none focus:border-primary/50 transition-colors cursor-pointer"
+              >
+                {signals.map((sig) => (
+                  <option key={sig} value={sig}>
+                    {sig}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Location Filter */}
+            <div>
+              <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
+                Location (State)
+              </label>
+              <select
+                value={selectedLocation}
+                onChange={(e) => setSelectedLocation(e.target.value)}
+                className="w-full text-sm bg-[#F8FAFC] border border-slate-200 text-navy font-semibold rounded-xl p-3 focus:outline-none focus:border-primary/50 transition-colors cursor-pointer"
+              >
+                {locations.map((loc) => (
+                  <option key={loc} value={loc}>
+                    {loc}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+        </div>
+
+        {/* Demo Cards Grid */}
+        {filteredOpportunities.length > 0 ? (
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredOpportunities.map((opp) => (
+              <OpportunityCard
+                key={opp.id}
+                opp={opp}
+                onViewSource={(o) => setActiveModalOpp(o)}
+              />
+            ))}
+          </div>
+        ) : (
+          <div className="bg-white border border-slate-200/80 rounded-2xl p-12 text-center shadow-sm">
+            <HelpCircle className="w-12 h-12 text-slate-300 mx-auto mb-4" />
+            <p className="text-navy font-bold text-lg mb-1">No matching opportunities found</p>
+            <p className="text-slate-400 text-sm">Try widening your filters to show the demo dataset.</p>
+            <button
+              onClick={() => {
+                setSelectedIndustry("All");
+                setSelectedSignal("All");
+                setSelectedLocation("All");
+              }}
+              className="mt-4 text-xs font-bold text-primary hover:underline"
+            >
+              Reset Filters
+            </button>
+          </div>
+        )}
+
+        {/* Live feed warning label */}
+        <div className="mt-8 text-center">
+          <p className="text-[10px] text-slate-400 font-semibold tracking-wider uppercase">
+            ⚠️ DEMO EXAMPLES ONLY. NO REAL CONVERSATIONS LIVE-STREAMED IN FREE VERSION.
+          </p>
+        </div>
+      </div>
+
+      {/* View Source Modal Simulation */}
+      <AnimatePresence>
+        {activeModalOpp && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setActiveModalOpp(null)}
+              className="absolute inset-0 bg-navy/60 backdrop-blur-sm"
+            />
+
+            {/* Modal Body */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 15 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 15 }}
+              className="relative z-10 w-full max-w-lg bg-white rounded-2xl shadow-2xl overflow-hidden border border-slate-200"
+            >
+              {/* Modal Header */}
+              <div className="p-5 border-b border-slate-100 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Shield className="w-5 h-5 text-primary" />
+                  <span className="text-sm font-bold text-navy">Public Conversation Link</span>
+                </div>
+                <button
+                  onClick={() => setActiveModalOpp(null)}
+                  className="text-slate-400 hover:text-slate-600 p-1 rounded-lg hover:bg-slate-100 transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Modal Content */}
+              <div className="p-6">
+                <div className="mb-4 bg-slate-50 border border-slate-200/50 p-4 rounded-xl">
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">
+                    PUBLIC SOURCE COMMENTS:
+                  </p>
+                  <p className="text-sm font-semibold text-navy leading-relaxed italic">
+                    &ldquo;{activeModalOpp.quote}&rdquo;
+                  </p>
+                  <div className="flex items-center gap-2 mt-3 text-xs text-slate-400 font-medium">
+                    <span className="font-semibold text-slate-500">{activeModalOpp.source}</span>
+                    <span>•</span>
+                    <span>Posted {activeModalOpp.time}</span>
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  <div className="flex gap-3 items-start">
+                    <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center shrink-0 text-xs font-bold text-primary-dark">
+                      1
+                    </div>
+                    <div>
+                      <h5 className="text-xs font-bold text-navy mb-0.5">Click to Open Public Discussion</h5>
+                      <p className="text-slate-500 text-xs leading-relaxed">
+                        CariLead redirects you directly to the original forum thread, Facebook group, or public portal.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex gap-3 items-start">
+                    <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center shrink-0 text-xs font-bold text-primary-dark">
+                      2
+                    </div>
+                    <div>
+                      <h5 className="text-xs font-bold text-navy mb-0.5">Disclose and Respond</h5>
+                      <p className="text-slate-500 text-xs leading-relaxed">
+                        You write a helpful public response directly on that platform, helping the user solve their query transparently.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex gap-3 items-start">
+                    <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center shrink-0 text-xs font-bold text-primary-dark">
+                      3
+                    </div>
+                    <div>
+                      <h5 className="text-xs font-bold text-navy mb-0.5">Private Conversation</h5>
+                      <p className="text-slate-500 text-xs leading-relaxed">
+                        If they like your response, they reply publicly or DM you to schedule a consultation.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Simulated Link action */}
+                <div className="mt-6 p-4 bg-primary/5 rounded-xl border border-primary/15 flex flex-col gap-2">
+                  <div className="flex justify-between items-center text-xs">
+                    <span className="text-slate-500 font-semibold">Simulated Destination:</span>
+                    <span className="text-primary-dark font-bold flex items-center gap-0.5">
+                      {activeModalOpp.source.replace(" ", "_").toLowerCase()}.com.my
+                      <LinkIcon className="w-3.5 h-3.5" />
+                    </span>
+                  </div>
+                  <button
+                    onClick={() => {
+                      alert("Simulating redirect to the public source post! In the real SaaS, this redirects you straight to the platform's original discussion URL.");
+                      setActiveModalOpp(null);
+                    }}
+                    className="w-full bg-primary hover:bg-primary-dark text-white text-xs font-bold py-3 rounded-xl transition-all shadow-sm hover:shadow flex items-center justify-center gap-1.5"
+                  >
+                    <span>Test External Redirect (Demo)</span>
+                    <ExternalLink className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+    </section>
+  );
+}
