@@ -20,51 +20,49 @@ interface LiveCard {
 
 const rotatingSignals = [
   { text: "Medical card premium AIA naik lagi 30%. Prudential or Great Eastern okay?", category: "Insurance", location: "Selangor" },
-  { text: "Looking for a reliable property agent in Cheras.", category: "Property", location: "Kuala Lumpur" },
-  { text: "First time buying medical card in Malaysia. What to check?", category: "Insurance", location: "Kuala Lumpur" },
-  { text: "Any recommended chemistry tuition class in Subang Jaya?", category: "Education", location: "Selangor" },
-  { text: "Renovation contractor delayed 2 months. Need advice.", category: "Renovation", location: "Johor" },
-  { text: "SUV budget RM150k. Mazda CX5 vs Chery Tiggo 8 Pro?", category: "Automotive", location: "Penang" },
-  { text: "Landlord refuse to return deposit (RM5000+) in Mont Kiara.", category: "Property", location: "Kuala Lumpur" },
-  { text: "Anyone tried treatment for acne scars in KL? Recommendations?", category: "Beauty", location: "Kuala Lumpur" }
+  { text: "Sama lah! My Prudential one also went up by RM50. Worry about waiting period if switch.", category: "Insurance", location: "Selangor" },
+  { text: "First time buying medical card in Malaysia. What to check? Agent quote RM250/m.", category: "Insurance", location: "Kuala Lumpur" },
+  { text: "Better look for takaful alternatives. Etiqa or Great Eastern Takaful quite popular now.", category: "Insurance", location: "Kuala Lumpur" },
+  { text: "Landlord refuse to return deposit (RM5000+) in Mont Kiara. Excuses about paint scratch.", category: "Property", location: "Kuala Lumpur" },
+  { text: "Check if annual limit is at least RM1M. RM100k limit is not enough for private hospital.", category: "Insurance", location: "Penang" },
+  { text: "Can file claim at Tribunal for Consumer Claims (TTPM). Only costs RM10, no need lawyer.", category: "Property", location: "Kuala Lumpur" }
 ];
 
 const initialCards: LiveCard[] = [
   {
     id: "card-init-1",
-    quote: "Medical card premium increased again. Any better option?",
+    quote: "Medical card premium AIA naik lagi 30%. Prudential or Great Eastern okay?",
     industry: "Insurance",
     location: "Selangor",
-    signal: "High Intent",
+    signal: "Premium repricing",
     time: "18m ago",
   },
   {
     id: "card-init-2",
-    quote: "Looking for a reliable property agent in Cheras.",
-    industry: "Property",
-    location: "Kuala Lumpur",
-    signal: "Recommendation",
+    quote: "Sama lah! My Prudential one also went up by RM50 last month. Thinking of changing but worry about waiting period...",
+    industry: "Insurance",
+    location: "Selangor",
+    signal: "Switching intent",
     time: "42m ago",
   },
   {
     id: "card-init-3",
-    quote: "Renovation contractor delayed for three months. Need advice.",
-    industry: "Renovation",
-    location: "Johor",
-    signal: "Service Complaint",
+    quote: "Condo rental in Mont Kiara - Landlord refuse to return deposit (RM5000+). Excuses about paint scratch.",
+    industry: "Property",
+    location: "Kuala Lumpur",
+    signal: "Rental dispute",
     time: "1h ago",
   },
 ];
 
 const signalPool = [
-  { quote: "Thinking of switching my AIA medical card to Great Eastern. Rates are too high.", industry: "Insurance", location: "Penang", signal: "High Intent" },
-  { quote: "Anyone knows a good renovation ID contractor for condo in PJ?", industry: "Renovation", location: "Selangor", signal: "Recommendation" },
-  { quote: "Landlord refused to return my RM3500 security deposit. Help!", industry: "Property", location: "Kuala Lumpur", signal: "Service Complaint" },
-  { quote: "SPM chemistry private tutor needed in Subang Jaya. 2 sessions/week.", industry: "Education", location: "Selangor", signal: "Recommendation" },
-  { quote: "Mazda CX-5 vs Chery Tiggo 7. Which has better fuel efficiency?", industry: "Automotive", location: "Penang", signal: "Comparing options" },
-  { quote: "Great Eastern premium naik 25% this year. Downsizing medical card advice?", industry: "Insurance", location: "Selangor", signal: "High Intent" },
-  { quote: "Looking to rent a 2BR unit in Mont Kiara. Budget RM3k.", industry: "Property", location: "Kuala Lumpur", signal: "Recommendation" },
-  { quote: "Car dealer delayed delivery for 3 months now. Can I cancel booking?", industry: "Automotive", location: "Johor", signal: "Service Complaint" },
+  { quote: "First time buying medical card in Malaysia. What to check? Agent recommended RM250/month.", industry: "Insurance", location: "Kuala Lumpur", signal: "New purchase query" },
+  { quote: "Check if the annual limit is at least RM1 million or RM2 million. Nowadays RM100k limit is not enough.", industry: "Insurance", location: "Penang", signal: "Underwriting advice" },
+  { quote: "Better look for takaful alternatives. Rates are usually more stable. Etiqa or Great Eastern Takaful quite popular.", industry: "Insurance", location: "Kuala Lumpur", signal: "Takaful search" },
+  { quote: "You can file a claim at the Tribunal for Consumer Claims (TTPM) or small claims court. Costs RM10 only.", industry: "Property", location: "Kuala Lumpur", signal: "Legal dispute advice" },
+  { quote: "AIA medical card renewal price increase again. Thinking of downgrade or check Allianz.", industry: "Insurance", location: "Perak", signal: "Switching intent" },
+  { quote: "Renting in Mont Kiara. Landlord delay return deposit. How to make claim under small claims court?", industry: "Property", location: "Kuala Lumpur", signal: "Rental dispute" },
+  { quote: "Any good property agent in Cheras to rent out my condo unit? Prefer fast reply.", industry: "Property", location: "Selangor", signal: "Agent recommendation" }
 ];
 
 export default function Hero({ onOpenEarlyAccess }: HeroProps) {
@@ -141,9 +139,9 @@ export default function Hero({ onOpenEarlyAccess }: HeroProps) {
   // Map signal names to design classes
   const getBadgeStyle = (sig: string) => {
     const s = sig.toLowerCase();
-    if (s.includes("high") || s.includes("switch")) return "bg-red-100 text-red-700";
-    if (s.includes("recommend") || s.includes("look")) return "bg-teal-100 text-teal-700";
-    if (s.includes("complaint") || s.includes("service")) return "bg-amber-100 text-amber-700";
+    if (s.includes("high") || s.includes("switch") || s.includes("repricing")) return "bg-red-100 text-red-700";
+    if (s.includes("recommend") || s.includes("look") || s.includes("query") || s.includes("agent")) return "bg-teal-100 text-teal-700";
+    if (s.includes("complaint") || s.includes("service") || s.includes("dispute") || s.includes("advice")) return "bg-amber-100 text-amber-700";
     return "bg-slate-100 text-slate-700";
   };
 
